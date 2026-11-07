@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Configuración · MDK Ferretería</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F1F5F9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+  .menu { width: 240px; background-color: #102A43; color: white; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; }
+  .logo-sidebar { width: 140px; display: block; margin: 0 auto 20px auto; background: white; padding: 10px; border-radius: 8px; }
+  .nav-links { flex: 1; overflow-y: auto; }
+  .menu a { color: #CBD5E1; text-decoration: none; display: block; padding: 12px 20px; margin: 4px 10px; border-radius: 6px; font-size: 14px; }
+  .menu a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+  .menu a.activo { background-color: rgba(255,255,255,0.15); border-left: 4px solid #F47920; color: white; font-weight: bold; }
+  .divisor { border-color: rgba(255,255,255,0.1); margin: 10px 20px; }
+  .creditos { font-size: 10px; color: #64748B; text-align: center; padding: 15px 10px 0 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
+  .creditos b { color: #F47920; }
+
+  /* CONTENIDO */
+  .contenido { flex: 1; padding: 30px; overflow-y: auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+  .header-top h1 { color: #102A43; margin: 0; font-size: 24px; }
+
+  .card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; max-width: 850px; }
+  .card h2 { color: #102A43; font-size: 18px; margin-top: 0; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 15px; }
+  .card p { color: #64748B; font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+
+  /* FORMULARIO DE CONFIGURACIÓN */
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+  .config-group { display: flex; flex-direction: column; }
+  .config-group.full { grid-column: 1 / -1; }
+  .config-group label { font-size: 12px; font-weight: bold; color: #64748B; margin-bottom: 5px; }
+  .config-group input { padding: 10px; border: 1px solid #CBD5E1; border-radius: 6px; font-family: inherit; font-size: 14px; background: #F8FAFC; }
+  .config-group input:focus { border-color: #F47920; outline: none; background: white; }
+  .config-group input:disabled { background: #E2E8F0; color: #64748B; cursor: not-allowed; }
+
+  .btn { padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+  .btn-primary { background: #10B981; color: white; }
+  .btn-primary:hover { background: #059669; }
+  .btn-warning { background: #F59E0B; color: white; }
+  .btn-warning:hover { background: #D97706; }
+  .btn-danger { background: #EF4444; color: white; }
+  .btn-danger:hover { background: #DC2626; }
+  
+  .zona-peligro { border: 1px solid #FCA5A5; background: #FEF2F2; padding: 20px; border-radius: 8px; margin-top: 30px; }
+  .zona-peligro h3 { color: #991B1B; margin-top: 0; font-size: 16px; }
+  .zona-peligro p { color: #7F1D1D; margin-bottom: 15px; }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <img src="logo.png" alt="MDK" class="logo-sidebar">
+  <div class="nav-links">
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="facturacion.html">🧾 Nota de Venta</a>
+    <a href="ingreso-mercaderia.html">📦 Ingreso Mercadería</a>
+    <hr class="divisor">
+    <a href="productos.html">🔧 Productos</a>
+    <a href="clientes.html">👥 Clientes</a>
+    <a href="#">🏭 Proveedores</a>
+    <hr class="divisor">
+    <a href="consultas.html">🔎 Reportes</a>
+    <a href="configuracion.html" class="activo">⚙️ Configuración</a>
+  </div>
+  <div class="creditos">
+    Sistema creado por<br><b>Cesar Paul Camacho Rivera</b><br>Ingeniería en TI
+  </div>
+</div>
+
+<div class="contenido">
+  <div class="header-top">
+    <h1>Configuración del Negocio</h1>
+  </div>
+
+  <!-- INFORMACIÓN DEL NEGOCIO Y PROPIETARIO -->
+  <div class="card">
+    <h2>Información del Negocio y Propietario</h2>
+    <p>Estos datos se usarán para los reportes y la información general del sistema. Puedes editarlos y guardarlos.</p>
+    
+    <div class="config-grid">
+      <div class="config-group">
+        <label>Nombre Comercial del Negocio</label>
+        <input type="text" id="confNombreNegocio">
+      </div>
+      <div class="config-group">
+        <label>R.U.C.</label>
+        <input type="text" id="confRuc">
+      </div>
+      
+      <div class="config-group">
+        <label>Régimen</label>
+        <input type="text" id="confRegimen" value="RIMPE - Negocio Popular" disabled>
+      </div>
+      <div class="config-group">
+        <label>Representante Legal (Propietario)</label>
+        <input type="text" id="confRepresentante">
+      </div>
+
+      <div class="config-group">
+        <label>Teléfono / Celular</label>
+        <input type="text" id="confTelefono">
+      </div>
+      <div class="config-group">
+        <label>Correo Electrónico</label>
+        <input type="email" id="confCorreo">
+      </div>
+      
+      <div class="config-group full">
+        <label>Dirección Matriz / Local Comercial</label>
+        <input type="text" id="confDireccion">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="guardarConfiguracion()">💾 Guardar Cambios</button>
+  </div>
+
+  <!-- RESPALDOS -->
+  <div class="card">
+    <h2>Respaldos de Información (Backup)</h2>
+    <p>Descarga un archivo con toda tu información (productos, ventas, clientes, compras) para guardarlo en un lugar seguro (USB, Google Drive, etc.). Si cambias de computadora, puedes restaurar este archivo y seguirás teniendo todo tu historial.</p>
+    
+    <button class="btn btn-primary" onclick="exportarBackup()">📥 Descargar Respaldo (.json)</button>
+    <br><br>
+    
+    <h3 style="font-size: 14px; color: #102A43;">Restaurar un Respaldo</h3>
+    <p style="font-size: 13px;">Si subes un respaldo, <b>se borrarán los datos actuales</b> y se reemplazarán por los del archivo.</p>
+    <input type="file" id="archivoBackup" accept=".json" style="display: none;" onchange="importarBackup(event)">
+    <button class="btn btn-warning" onclick="document.getElementById('archivoBackup').click()">📤 Subir y Restaurar Respaldo</button>
+  </div>
+
+  <!-- ZONA DE PELIGRO -->
+  <div class="card zona-peligro">
+    <h3>⚠️ Zona de Peligro</h3>
+    <p>Las siguientes acciones son irreversibles. Úsalas solo si deseas empezar de cero (por ejemplo, si estuviste haciendo pruebas y quieres borrar los datos falsos antes de empezar a usar el sistema en tu local).</p>
+    <button class="btn btn-danger" onclick="borrarTodo()">🗑️ Borrar Toda la Base de Datos</button>
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('logueado') !== 'si') window.location.href = 'index.html';
+
+  // ==========================================
+  // CONEXIÓN A LA BASE DE DATOS
+  // ==========================================
+  let db;
+  const request = indexedDB.open("MDK_Ferreteria", 4); 
+  request.onsuccess = function(e) { db = e.target.result; };
+
+  // ==========================================
+  // CARGAR Y GUARDAR CONFIGURACIÓN (LocalStorage)
+  // ==========================================
+  function cargarConfiguracion() {
+    // Si no hay datos guardados, usamos los datos iniciales
+    const configGuardada = JSON.parse(localStorage.getItem('mdk_config'));
+
+    const config = configGuardada || {
+      nombre: 'MDK Ferretería',
+      ruc: '1753447646001',
+      representante: 'PONCE QUINGAIZA KERLY JEMIMA',
+      telefono: '0985582846',
+      correo: 'kerlyjemimaponce093@gmail.com',
+      direccion: 'Andrés Pérez S9-160 y Gonzalo Martín, Chiriyacu, Chimbacalle, Quito'
+    };
+
+    document.getElementById('confNombreNegocio').value = config.nombre;
+    document.getElementById('confRuc').value = config.ruc;
+    document.getElementById('confRepresentante').value = config.representante;
+    document.getElementById('confTelefono').value = config.telefono;
+    document.getElementById('confCorreo').value = config.correo;
+    document.getElementById('confDireccion').value = config.direccion;
+  }
+
+  function guardarConfiguracion() {
+    const config = {
+      nombre: document.getElementById('confNombreNegocio').value.trim(),
+      ruc: document.getElementById('confRuc').value.trim(),
+      representante: document.getElementById('confRepresentante').value.trim(),
+      telefono: document.getElementById('confTelefono').value.trim(),
+      correo: document.getElementById('confCorreo').value.trim(),
+      direccion: document.getElementById('confDireccion').value.trim()
+    };
+
+    if (!config.nombre || !config.ruc || !config.representante) {
+      alert("Por favor, llena los campos obligatorios (Nombre, RUC y Representante).");
+      return;
+    }
+
+    localStorage.setItem('mdk_config', JSON.stringify(config));
+    alert("✅ Información del negocio actualizada correctamente.");
+  }
+
+  // Cargar la configuración al abrir la página
+  cargarConfiguracion();
+
+  // ==========================================
+  // EXPORTAR RESPALDO
+  // ==========================================
+  function exportarBackup() {
+    const backupData = {};
+    const storeNames = ["productos", "clientes", "ventas", "compras"];
+    let completados = 0;
+
+    // Incluir configuración en el respaldo
+    backupData["configuracion"] = JSON.parse(localStorage.getItem('mdk_config')) || {};
+
+    storeNames.forEach(nombreTabla => {
+      const transaction = db.transaction([nombreTabla], "readonly");
+      const store = transaction.objectStore(nombreTabla);
+      const req = store.getAll();
+
+      req.onsuccess = function() {
+        backupData[nombreTabla] = req.result;
+        completados++;
+
+        if (completados === storeNames.length) {
+          const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          
+          const fecha = new Date().toISOString().split('T')[0];
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Respaldo_MDK_${fecha}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          
+          alert("✅ Respaldo descargado con éxito. Guárdalo en un lugar seguro.");
+        }
+      };
+    });
+  }
+
+  // ==========================================
+  // IMPORTAR RESPALDO
+  // ==========================================
+  function importarBackup(event) {
+    const archivo = event.target.files[0];
+    if (!archivo) return;
+
+    if (!confirm("⚠️ ¿Estás seguro? Los datos actuales serán reemplazados por los del archivo.")) {
+      event.target.value = ''; 
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        
+        // Restaurar configuración si existe en el backup
+        if (data.configuracion && Object.keys(data.configuracion).length > 0) {
+          localStorage.setItem('mdk_config', JSON.stringify(data.configuracion));
+        }
+
+        const storeNames = ["productos", "clientes", "ventas", "compras"];
+        let completados = 0;
+
+        storeNames.forEach(nombreTabla => {
+          if (data[nombreTabla]) {
+            const tx = db.transaction([nombreTabla], "readwrite");
+            const store = tx.objectStore(nombreTabla);
+            store.clear(); 
+            
+            data[nombreTabla].forEach(item => {
+              store.add(item); 
+            });
+
+            tx.oncomplete = function() {
+              completados++;
+              if (completados === storeNames.length) {
+                alert("✅ Respaldo restaurado correctamente. La página se recargará.");
+                location.reload();
+              }
+            };
+          } else {
+            completados++;
+          }
+        });
+      } catch (error) {
+        alert("❌ Error: El archivo no es un respaldo válido.");
+        event.target.value = '';
+      }
+    };
+    reader.readAsText(archivo);
+  }
+
+  // ==========================================
+  // BORRAR TODA LA BASE DE DATOS
+  // ==========================================
+  function borrarTodo() {
+    const confirmacion1 = confirm("⚠️ ¿Estás TOTALMENTE seguro de que quieres borrar TODOS los productos, ventas y clientes?");
+    if (!confirmacion1) return;
+
+    const confirmacion2 = prompt("Escribe la palabra 'BORRAR' (en mayúsculas) para confirmar:");
+    if (confirmacion2 !== 'BORRAR') {
+      alert("Confirmación incorrecta. No se ha borrado nada.");
+      return;
+    }
+
+    const storeNames = ["productos", "clientes", "ventas", "compras"];
+    let completados = 0;
+
+    storeNames.forEach(nombreTabla => {
+      const tx = db.transaction([nombreTabla], "readwrite");
+      const store = tx.objectStore(nombreTabla);
+      store.clear();
+
+      tx.oncomplete = function() {
+        completados++;
+        if (completados === storeNames.length) {
+          alert("🗑️ Base de datos borrada. El sistema está como nuevo.");
+          location.reload();
+        }
+      };
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reportes · MDK Ferretería</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F1F5F9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+  .menu { width: 240px; background-color: #102A43; color: white; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; }
+  .logo-sidebar { width: 140px; display: block; margin: 0 auto 20px auto; background: white; padding: 10px; border-radius: 8px; }
+  .nav-links { flex: 1; overflow-y: auto; }
+  .menu a { color: #CBD5E1; text-decoration: none; display: block; padding: 12px 20px; margin: 4px 10px; border-radius: 6px; font-size: 14px; }
+  .menu a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+  .menu a.activo { background-color: rgba(255,255,255,0.15); border-left: 4px solid #F47920; color: white; font-weight: bold; }
+  .divisor { border-color: rgba(255,255,255,0.1); margin: 10px 20px; }
+  .creditos { font-size: 10px; color: #64748B; text-align: center; padding: 15px 10px 0 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
+  .creditos b { color: #F47920; }
+
+  /* CONTENIDO */
+  .contenido { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+  
+  /* PESTAÑAS (TABS) */
+  .tabs-header { display: flex; gap: 10px; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; }
+  .tab-btn { background: transparent; color: #64748B; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; transition: 0.2s; }
+  .tab-btn:hover { background: #E2E8F0; color: #102A43; }
+  .tab-btn.active { color: #F47920; border-bottom: 3px solid #F47920; }
+  .tab-content { display: none; animation: fadeIn 0.3s; }
+  .tab-content.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* FILTROS */
+  .filtros-card { background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: flex-end; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filtro-grupo { display: flex; flex-direction: column; }
+  .filtro-grupo label { font-size: 12px; font-weight: bold; color: #64748B; margin-bottom: 5px; }
+  .filtro-grupo input { padding: 8px; border: 1px solid #CBD5E1; border-radius: 6px; font-family: inherit; }
+  .btn { background: #F47920; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .btn:hover { background: #D96616; }
+  .btn-excel { background: #10B981; margin-left: auto; }
+  .btn-excel:hover { background: #059669; }
+
+  /* TARJETAS KPI */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+  .kpi-card { background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #F47920; }
+  .kpi-card h3 { margin: 0 0 5px 0; color: #64748B; font-size: 12px; text-transform: uppercase; }
+  .kpi-card .numero { font-size: 24px; font-weight: bold; color: #102A43; }
+  .kpi-card.verde { border-left-color: #10B981; }
+  .kpi-card.verde .numero { color: #10B981; }
+  .kpi-card.rojo { border-left-color: #EF4444; }
+  .kpi-card.rojo .numero { color: #EF4444; }
+
+  /* TABLAS */
+  .secciones-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  .card-tabla { background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; }
+  .card-tabla h2 { font-size: 16px; color: #102A43; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; }
+  
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 13px; }
+  th { background: #F8FAFC; color: #64748B; text-transform: uppercase; font-size: 11px; }
+  .tabla-scroll { max-height: 400px; overflow-y: auto; }
+
+  /* MODAL DETALLE */
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
+  .modal { background: white; padding: 25px; border-radius: 10px; width: 500px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+  .modal h2 { margin-top: 0; color: #102A43; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px;}
+  .btn-cerrar { background: #E2E8F0; color: #1E293B; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; float: right; }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <img src="logo.png" alt="MDK" class="logo-sidebar">
+  <div class="nav-links">
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="facturacion.html">🧾 Nota de Venta</a>
+    <a href="ingreso-mercaderia.html">📦 Ingreso Mercadería</a>
+    <hr class="divisor">
+    <a href="productos.html">🔧 Productos</a>
+    <a href="clientes.html">👥 Clientes</a>
+    <a href="#">🏭 Proveedores</a>
+    <hr class="divisor">
+    <a href="consultas.html" class="activo">🔎 Reportes</a>
+    <a href="configuracion.html">⚙️ Configuración</a>
+  </div>
+  <div class="creditos">
+    Sistema creado por<br><b>Cesar Paul Camacho Rivera</b><br>Ingeniería en TI
+  </div>
+</div>
+
+<div class="contenido">
+  
+  <!-- PESTAÑAS -->
+  <div class="tabs-header">
+    <button class="tab-btn active" onclick="abrirTab('tab-ventas')">📊 Ventas</button>
+    <button class="tab-btn" onclick="abrirTab('tab-clientes')">👥 Clientes</button>
+    <button class="tab-btn" onclick="abrirTab('tab-inventario')">📦 Inventario</button>
+  </div>
+
+  <!-- ==========================================
+       PESTAÑA 1: VENTAS
+       ========================================== -->
+  <div id="tab-ventas" class="tab-content active">
+    <div class="filtros-card">
+      <div class="filtro-grupo">
+        <label>Desde</label>
+        <input type="date" id="fechaInicio">
+      </div>
+      <div class="filtro-grupo">
+        <label>Hasta</label>
+        <input type="date" id="fechaFin">
+      </div>
+      <button class="btn" onclick="generarReporteVentas()">Filtrar</button>
+      <button class="btn btn-excel" onclick="exportarVentasExcel()">📥 Excel Ventas</button>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <h3>Total Facturado</h3>
+        <div class="numero" id="kpiTotal">$0.00</div>
+      </div>
+      <div class="kpi-card verde">
+        <h3>Ganancia Estimada</h3>
+        <div class="numero" id="kpiGanancia">$0.00</div>
+      </div>
+      <div class="kpi-card rojo">
+        <h3>Descuentos Aplicados</h3>
+        <div class="numero" id="kpiDescuentos">$0.00</div>
+      </div>
+      <div class="kpi-card">
+        <h3>Nro. de Ventas</h3>
+        <div class="numero" id="kpiCantidad">0</div>
+      </div>
+    </div>
+
+    <div class="secciones-grid">
+      <div class="card-tabla">
+        <h2>Historial de Ventas en el Período</h2>
+        <div class="tabla-scroll">
+          <table>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Total</th><th>Acciones</th></tr></thead>
+            <tbody id="tablaVentas"></tbody>
+          </table>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="card-tabla">
+          <h2>Top 5 Productos Más Vendidos</h2>
+          <table>
+            <thead><tr><th>Producto</th><th>Cant.</th></tr></thead>
+            <tbody id="tablaTopProductos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PESTAÑA 2: CLIENTES
+       ========================================== -->
+  <div id="tab-clientes" class="tab-content">
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="kpi-card">
+        <h3>Clientes Registrados</h3>
+        <div class="numero" id="kpiTotalClientes">0</div>
+      </div>
+      <div class="kpi-card verde">
+        <h3>Cliente Estrella (Mayor Compra)</h3>
+        <div class="numero" id="kpiMejorCliente" style="font-size: 18px;">-</div>
+      </div>
+      <div class="kpi-card">
+        <h3>Ventas a Consumidor Final</h3>
+        <div class="numero" id="kpiConsumidorFinal">0</div>
+      </div>
+    </div>
+
+    <div class="card-tabla">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; margin-bottom: 15px; padding-bottom: 10px;">
+        <h2 style="border: none; margin: 0; padding: 0;">Ranking de Clientes (Histórico)</h2>
+        <button class="btn btn-excel" onclick="exportarClientesExcel()">📥 Excel Clientes</button>
+      </div>
+      <div class="tabla-scroll">
+        <table>
+          <thead>
+            <tr><th>Cliente</th><th>Cédula/RUC</th><th>Nro. Compras</th><th>Total Gastado</th><th>Última Compra</th></tr>
+          </thead>
+          <tbody id="tablaClientes"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PESTAÑA 3: INVENTARIO
+       ========================================== -->
+  <div id="tab-inventario" class="tab-content">
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="kpi-card">
+        <h3>Total Ítems / Stock</h3>
+        <div class="numero" id="kpiItemsInventario">0</div>
+      </div>
+      <div class="kpi-card">
+        <h3>Inversión (A Costo)</h3>
+        <div class="numero" id="kpiInvCosto">$0.00</div>
+      </div>
+      <div class="kpi-card verde">
+        <h3>Valor a Venta</h3>
+        <div class="numero" id="kpiInvVenta">$0.00</div>
+      </div>
+      <div class="kpi-card rojo">
+        <h3>Alerta Stock Bajo</h3>
+        <div class="numero" id="kpiStockBajo">0</div>
+      </div>
+    </div>
+
+    <div class="card-tabla">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; margin-bottom: 15px; padding-bottom: 10px;">
+        <h2 style="border: none; margin: 0; padding: 0;">Detalle del Inventario Actual</h2>
+        <button class="btn btn-excel" onclick="exportarInventarioExcel()">📥 Excel Inventario</button>
+      </div>
+      <div class="tabla-scroll">
+        <table>
+          <thead>
+            <tr><th>Código</th><th>Producto</th><th>Stock</th><th>Costo Unit.</th><th>Precio Venta</th><th>Valor Total (Venta)</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="tablaInventario"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DETALLE VENTA (Solo para pestaña ventas) -->
+<div class="modal-overlay" id="modalDetalle">
+  <div class="modal">
+    <h2>Detalle de Venta</h2>
+    <div id="infoCliente" style="font-size: 13px; margin-bottom: 15px; line-height: 1.6;"></div>
+    <table style="font-size: 12px; margin-bottom: 15px;">
+      <thead><tr><th>Cant.</th><th>Producto</th><th>Precio</th><th>Total</th></tr></thead>
+      <tbody id="detalleItems"></tbody>
+    </table>
+    <h3 style="text-align: right; margin: 0; color: #102A43;" id="detalleTotal"></h3>
+    <br>
+    <button class="btn-cerrar" onclick="cerrarModal()">Cerrar</button>
+    <div style="clear:both;"></div>
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('logueado') !== 'si') window.location.href = 'index.html';
+
+  let db;
+  const request = indexedDB.open("MDK_Ferreteria", 4);
+  let todasLasVentas = [];
+  let todosLosProductos = [];
+  let todosLosClientes = [];
+  let ventasFiltradas = [];
+
+  request.onsuccess = function(e) {
+    db = e.target.result;
+    
+    const hoy = new Date();
+    const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    document.getElementById('fechaInicio').value = primerDia.toISOString().split('T')[0];
+    document.getElementById('fechaFin').value = hoy.toISOString().split('T')[0];
+
+    cargarDatosGlobales();
+  };
+
+  // CONTROL DE PESTAÑAS
+  function abrirTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function cargarDatosGlobales() {
+    const txV = db.transaction(["ventas"], "readonly");
+    txV.objectStore("ventas").getAll().onsuccess = function(e) {
+      todasLasVentas = e.target.result;
+      
+      const txP = db.transaction(["productos"], "readonly");
+      txP.objectStore("productos").getAll().onsuccess = function(ev) {
+        todosLosProductos = ev.target.result;
+
+        const txC = db.transaction(["clientes"], "readonly");
+        txC.objectStore("clientes").getAll().onsuccess = function(evc) {
+          todosLosClientes = evc.target.result;
+          
+          // Generar todos los reportes al iniciar
+          generarReporteVentas();
+          generarReporteClientes();
+          generarReporteInventario();
+        };
+      };
+    };
+  }
+
+  // ==========================================
+  // 1. REPORTE DE VENTAS
+  // ==========================================
+  function generarReporteVentas() {
+    const inicio = document.getElementById('fechaInicio').value;
+    const fin = document.getElementById('fechaFin').value;
+
+    ventasFiltradas = todasLasVentas.filter(v => {
+      const fechaVenta = v.fecha.split('T')[0];
+      return fechaVenta >= inicio && fechaVenta <= fin;
+    });
+
+    let totalFacturado = 0;
+    let totalDescuentos = 0;
+    let totalGanancia = 0;
+    let conteoProductos = {};
+
+    ventasFiltradas.forEach(v => {
+      totalFacturado += v.total;
+      totalDescuentos += (v.descuentoDinero || 0);
+
+      v.items.forEach(item => {
+        if(conteoProductos[item.nombre]) conteoProductos[item.nombre] += item.cantidad;
+        else conteoProductos[item.nombre] = item.cantidad;
+
+        const prodDB = todosLosProductos.find(p => p.id === item.id);
+        const costo = prodDB ? (prodDB.costo || 0) : 0;
+        totalGanancia += (item.precio - costo) * item.cantidad;
+      });
+    });
+
+    document.getElementById('kpiTotal').innerText = '$' + totalFacturado.toFixed(2);
+    document.getElementById('kpiDescuentos').innerText = '$' + totalDescuentos.toFixed(2);
+    document.getElementById('kpiGanancia').innerText = '$' + totalGanancia.toFixed(2);
+    document.getElementById('kpiCantidad').innerText = ventasFiltradas.length;
+
+    const tbody = document.getElementById('tablaVentas');
+    if (ventasFiltradas.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay ventas en este período.</td></tr>`;
+    } else {
+      tbody.innerHTML = ventasFiltradas.slice().reverse().map((v, index) => {
+        const fecha = new Date(v.fecha).toLocaleDateString() + ' ' + new Date(v.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        return `
+          <tr>
+            <td>${fecha}</td>
+            <td><b>${v.clienteNombre}</b></td>
+            <td style="font-weight:bold; color:#10B981;">$${v.total.toFixed(2)}</td>
+            <td><button onclick="verDetalle(${index})" style="background:#F47920; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Ver</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    const topArray = Object.keys(conteoProductos).map(nombre => {
+      return { nombre: nombre, cantidad: conteoProductos[nombre] };
+    }).sort((a, b) => b.cantidad - a.cantidad).slice(0, 5);
+
+    document.getElementById('tablaTopProductos').innerHTML = topArray.map(p => `
+      <tr><td>${p.nombre}</td><td><b>${p.cantidad} uds</b></td></tr>
+    `).join('') || `<tr><td colspan="2" style="text-align:center;">Sin datos</td></tr>`;
+  }
+
+  // ==========================================
+  // 2. REPORTE DE CLIENTES
+  // ==========================================
+  function generarReporteClientes() {
+    document.getElementById('kpiTotalClientes').innerText = todosLosClientes.length;
+
+    let resumenClientes = {};
+    let consumidorFinalCount = 0;
+
+    todasLasVentas.forEach(v => {
+      if (v.clienteCedula === '9999999999' || v.clienteNombre === 'CONSUMIDOR FINAL') {
+        consumidorFinalCount++;
+      } else {
+        const key = v.clienteCedula;
+        if (!resumenClientes[key]) {
+          resumenClientes[key] = {
+            nombre: v.clienteNombre,
+            cedula: v.clienteCedula,
+            compras: 0,
+            totalGastado: 0,
+            ultimaCompra: v.fecha
+          };
+        }
+        resumenClientes[key].compras++;
+        resumenClientes[key].totalGastado += v.total;
+        // Guardar la fecha más reciente
+        if (v.fecha > resumenClientes[key].ultimaCompra) {
+          resumenClientes[key].ultimaCompra = v.fecha;
+        }
+      }
+    });
+
+    document.getElementById('kpiConsumidorFinal').innerText = consumidorFinalCount;
+
+    const arrayClientes = Object.values(resumenClientes).sort((a,b) => b.totalGastado - a.totalGastado);
+
+    if(arrayClientes.length > 0) {
+      document.getElementById('kpiMejorCliente').innerText = arrayClientes[0].nombre;
+    } else {
+      document.getElementById('kpiMejorCliente').innerText = 'Sin ventas';
+    }
+
+    const tbody = document.getElementById('tablaClientes');
+    if (arrayClientes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay ventas registradas a clientes específicos.</td></tr>`;
+    } else {
+      tbody.innerHTML = arrayClientes.map(c => {
+        const fUltima = new Date(c.ultimaCompra).toLocaleDateString();
+        return `
+          <tr>
+            <td><b>${c.nombre}</b></td>
+            <td>${c.cedula}</td>
+            <td>${c.compras}</td>
+            <td style="font-weight:bold; color:#10B981;">$${c.totalGastado.toFixed(2)}</td>
+            <td>${fUltima}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  // ==========================================
+  // 3. REPORTE DE INVENTARIO
+  // ==========================================
+  function generarReporteInventario() {
+    let totalItems = 0;
+    let invCosto = 0;
+    let invVenta = 0;
+    let stockBajoCount = 0;
+
+    todosLosProductos.forEach(p => {
+      totalItems += (p.stock || 0);
+      invCosto += (p.costo || 0) * (p.stock || 0);
+      invVenta += (p.precio || 0) * (p.stock || 0);
+      if (p.stock <= (p.stockMin || 5)) stockBajoCount++;
+    });
+
+    document.getElementById('kpiItemsInventario').innerText = totalItems;
+    document.getElementById('kpiInvCosto').innerText = '$' + invCosto.toFixed(2);
+    document.getElementById('kpiInvVenta').innerText = '$' + invVenta.toFixed(2);
+    document.getElementById('kpiStockBajo').innerText = stockBajoCount;
+
+    const tbody = document.getElementById('tablaInventario');
+    // Ordenar por los que tienen menos stock primero
+    const prodOrdenados = todosLosProductos.slice().sort((a,b) => (a.stock||0) - (b.stock||0));
+
+    if (prodOrdenados.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay productos registrados.</td></tr>`;
+    } else {
+      tbody.innerHTML = prodOrdenados.map(p => {
+        const valorTotal = (p.precio || 0) * (p.stock || 0);
+        const esBajo = p.stock <= (p.stockMin || 5);
+        const estado = esBajo 
+          ? '<span style="background:#FEE2E2; color:#991B1B; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Reponer</span>' 
+          : '<span style="background:#D1FAE5; color:#065F46; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">OK</span>';
+        
+        return `
+          <tr>
+            <td><b>${p.codigo}</b></td>
+            <td>${p.nombre}</td>
+            <td style="font-weight:bold;">${p.stock}</td>
+            <td>$${(p.costo || 0).toFixed(2)}</td>
+            <td>$${(p.precio || 0).toFixed(2)}</td>
+            <td style="color:#10B981; font-weight:bold;">$${valorTotal.toFixed(2)}</td>
+            <td>${estado}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  // ==========================================
+  // EXPORTACIONES A EXCEL (CSV)
+  // ==========================================
+  function descargarCSV(contenido, nombreArchivo) {
+    const blob = new Blob(["\uFEFF" + contenido], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", nombreArchivo);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function exportarVentasExcel() {
+    if (ventasFiltradas.length === 0) return alert("No hay ventas para exportar.");
+    let csv = "Fecha;Cliente;Cedula;Subtotal;Descuento;Total\n";
+    ventasFiltradas.forEach(v => {
+      const fecha = new Date(v.fecha).toLocaleString().replace(',', '');
+      csv += `${fecha};${v.clienteNombre};${v.clienteCedula};${(v.subtotal||0).toFixed(2)};${(v.descuentoDinero||0).toFixed(2)};${v.total.toFixed(2)}\n`;
+    });
+    descargarCSV(csv, `Ventas_${document.getElementById('fechaInicio').value}_al_${document.getElementById('fechaFin').value}.csv`);
+  }
+
+  function exportarClientesExcel() {
+    let resumenClientes = {};
+    todasLasVentas.forEach(v => {
+      if (v.clienteCedula !== '9999999999') {
+        if (!resumenClientes[v.clienteCedula]) resumenClientes[v.clienteCedula] = { nombre: v.clienteNombre, cedula: v.clienteCedula, compras: 0, total: 0 };
+        resumenClientes[v.clienteCedula].compras++;
+        resumenClientes[v.clienteCedula].total += v.total;
+      }
+    });
+    const arr = Object.values(resumenClientes).sort((a,b) => b.total - a.total);
+    if(arr.length === 0) return alert("No hay clientes registrados con ventas.");
+    
+    let csv = "Nombre;Cedula;Nro Compras;Total Gastado\n";
+    arr.forEach(c => {
+      csv += `${c.nombre};${c.cedula};${c.compras};${c.total.toFixed(2)}\n`;
+    });
+    descargarCSV(csv, `Reporte_Clientes.csv`);
+  }
+
+  function exportarInventarioExcel() {
+    if (todosLosProductos.length === 0) return alert("No hay productos en el inventario.");
+    let csv = "Codigo;Producto;Stock;Costo;Precio Venta;Valor Total\n";
+    todosLosProductos.forEach(p => {
+      csv += `${p.codigo};${p.nombre};${p.stock};${(p.costo||0).toFixed(2)};${(p.precio||0).toFixed(2)};${((p.precio||0)*(p.stock||0)).toFixed(2)}\n`;
+    });
+    descargarCSV(csv, `Inventario_Actual.csv`);
+  }
+
+  // ==========================================
+  // DETALLE VENTA (MODAL)
+  // ==========================================
+  function verDetalle(index) {
+    const v = ventasFiltradas.slice().reverse()[index];
+    const fecha = new Date(v.fecha).toLocaleString();
+    
+    document.getElementById('infoCliente').innerHTML = `
+      <b>Fecha:</b> ${fecha}<br>
+      <b>Cliente:</b> ${v.clienteNombre} (${v.clienteCedula})<br>
+      <b>Descuento:</b> ${v.descuentoPorcentaje}% (-$${(v.descuentoDinero||0).toFixed(2)})
+    `;
+
+    document.getElementById('detalleItems').innerHTML = v.items.map(item => `
+      <tr>
+        <td>${item.cantidad}</td>
+        <td>${item.nombre}</td>
+        <td>$${item.precio.toFixed(2)}</td>
+        <td>$${(item.precio * item.cantidad).toFixed(2)}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('detalleTotal').innerText = 'TOTAL: $' + v.total.toFixed(2);
+    document.getElementById('modalDetalle').style.display = 'flex';
+  }
+
+  function cerrarModal() {
+    document.getElementById('modalDetalle').style.display = 'none';
+  }
+</script>
+</body>
+</html>

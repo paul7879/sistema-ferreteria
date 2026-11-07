@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login · MDK Ferretería</title>
+<style>
+  body { font-family: Arial, sans-serif; background-color: #102A43; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; flex-direction: column; }
+  .card { background: white; padding: 40px; border-radius: 10px; width: 320px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+  
+  /* Estilo para la imagen del logo */
+  .logo-img { width: 180px; height: auto; margin-bottom: 20px; }
+  
+  input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+  button { width: 100%; padding: 12px; background: #F47920; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
+  button:hover { background: #D96616; }
+  #msg { color: #991B1B; background: #FEE2E2; padding: 8px; border-radius: 5px; font-size: 13px; margin-top: 15px; display: none; }
+  
+  /* Créditos */
+  .creditos { color: #94A3B8; font-size: 11px; margin-top: 20px; text-align: center; line-height: 1.5; }
+  .creditos b { color: #F47920; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Aquí llamamos a la imagen del logo -->
+  <img src="logo.png" alt="MDK Ferretería" class="logo-img">
+  
+  <form id="formulario">
+    <input type="text" id="usuario" placeholder="Usuario (admin)">
+    <input type="password" id="clave" placeholder="Contraseña (admin123)">
+    <button type="submit">Ingresar al Sistema</button>
+  </form>
+  <div id="msg">❌ Usuario o contraseña incorrectos</div>
+</div>
+
+<!-- Créditos del proyecto -->
+<div class="creditos">
+  Creado por <b>Cesar Paul Camacho Rivera</b><br>
+  Ingeniería en TI · RUC: 1753447646001
+</div>
+
+<script>
+  document.getElementById('formulario').addEventListener('submit', function(evento) {
+    evento.preventDefault();
+    
+    var user = document.getElementById('usuario').value;
+    var pass = document.getElementById('clave').value;
+
+    if (user === 'admin' && pass === 'admin123') {
+      localStorage.setItem('logueado', 'si');
+      window.location.href = 'productos.html';
+    } else {
+      document.getElementById('msg').style.display = 'block';
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Facturación A6 · MDK Ferretería</title>
+<style>
+  /* =========================================
+     ESTILOS GENERALES Y MENÚ (PANTALLA)
+     ========================================= */
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F1F5F9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+  .menu { width: 240px; background-color: #102A43; color: white; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; }
+  .logo-sidebar { width: 140px; display: block; margin: 0 auto 20px auto; background: white; padding: 10px; border-radius: 8px; }
+  .nav-links { flex: 1; overflow-y: auto; }
+  .menu a { color: #CBD5E1; text-decoration: none; display: block; padding: 12px 20px; margin: 4px 10px; border-radius: 6px; font-size: 14px; }
+  .menu a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+  .menu a.activo { background-color: rgba(255,255,255,0.15); border-left: 4px solid #F47920; color: white; font-weight: bold; }
+  .divisor { border-color: rgba(255,255,255,0.1); margin: 10px 20px; }
+  .creditos { font-size: 10px; color: #64748B; text-align: center; padding: 15px 10px 0 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
+  .creditos b { color: #F47920; }
+
+  .contenido { flex: 1; display: flex; gap: 20px; padding: 20px; overflow: hidden; }
+  .panel-pos { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
+  .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+  
+  /* FORMULARIOS IZQUIERDA */
+  .buscador-box { display: flex; gap: 10px; margin-bottom: 15px; }
+  .buscador-box input { flex: 1; padding: 15px; font-size: 16px; border: 2px solid #E2E8F0; border-radius: 8px; }
+  .buscador-box input:focus { border-color: #F47920; outline: none; }
+  .btn-buscar { background: #102A43; color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  
+  .cliente-buscar-box { display: flex; gap: 10px; margin-bottom: 10px; }
+  .cliente-buscar-box input { flex: 1; padding: 10px; font-size: 14px; border: 2px solid #F47920; border-radius: 6px; background: #FFF7ED; font-weight: bold; color: #C2410C;}
+  .cliente-buscar-box input::placeholder { color: #F47920; opacity: 0.7; }
+  .btn-cargar-cli { background: #F47920; color: white; border: none; padding: 0 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+  .cliente-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; background: #F8FAFC; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; }
+  .cliente-grid input { padding: 10px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .cliente-grid input:focus { border-color: #F47920; outline: none; }
+  .cliente-grid .full-width { grid-column: 1 / -1; }
+
+  .tabla-carrito { width: 100%; border-collapse: collapse; }
+  .tabla-carrito th, .tabla-carrito td { padding: 10px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 13px; }
+  .tabla-carrito th { background: #F8FAFC; color: #64748B; text-transform: uppercase; font-size: 11px; }
+  
+  .ctrl-cantidad { display: flex; align-items: center; gap: 4px; }
+  .ctrl-cantidad button { background: #E2E8F0; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-weight: bold; color: #102A43; display: flex; align-items: center; justify-content: center;}
+  .ctrl-cantidad button:hover { background: #CBD5E1; }
+  .ctrl-cantidad input { width: 45px; text-align: center; padding: 4px; border: 1px solid #CBD5E1; border-radius: 4px; font-weight: bold; }
+
+  .total-box { margin-top: auto; border-top: 2px solid #E2E8F0; padding-top: 15px; }
+  .fila-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 16px; color: #64748B; }
+  .fila-descuento input { width: 80px; padding: 8px; text-align: right; border: 2px solid #E2E8F0; border-radius: 6px; font-size: 16px; font-weight: bold; color: #EF4444; }
+  .fila-descuento input:focus { border-color: #EF4444; outline: none; }
+  .fila-descuento .simbolo { font-size: 16px; font-weight: bold; color: #EF4444; margin-right: 5px; }
+  .total-final { font-size: 28px; font-weight: bold; color: #102A43; display: flex; justify-content: space-between; margin-bottom: 15px; }
+  .btn-cobrar { width: 100%; padding: 18px; background: #10B981; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .btn-cobrar:hover { background: #059669; }
+  .btn-vaciar { width: 100%; padding: 10px; background: #FEE2E2; color: #991B1B; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+  /* =========================================
+     VISTA PREVIA A6 (DERECHA)
+     ========================================= */
+  .panel-preview { flex: 0.8; background: #E2E8F0; border-radius: 10px; padding: 20px; display: flex; justify-content: center; overflow-y: auto; }
+  
+  /* Simulamos el tamaño de una hoja A6 */
+  .hoja-a6 { 
+    background: white; 
+    width: 105mm; /* Ancho A6 */
+    height: 148mm; /* Alto A6 */
+    padding: 5mm 8mm; 
+    box-sizing: border-box;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    font-family: Arial, sans-serif; 
+    color: #000;
+    position: relative;
+  }
+
+  /* CABECERA */
+  .a6-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .a6-header-left { width: 60%; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  
+  .a6-logo { max-width: 100px; max-height: 30px; object-fit: contain; margin-bottom: 3px; }
+  
+  .a6-header-left p { margin: 1px 0; font-size: 7.5px; }
+  .a6-header-left .bold { font-weight: bold; }
+  
+  /* Espacio en blanco para la autorización preimpresa */
+  .a6-header-right { width: 35%; border: 1px dashed #ccc; } 
+
+  /* DATOS CLIENTE */
+  .a6-cliente { margin-bottom: 6px; font-size: 8.5px; }
+  .a6-fila { display: flex; margin-bottom: 4px; }
+  .a6-fila .label { font-weight: bold; width: 55px; }
+  .a6-fila .linea { flex: 1; border-bottom: 1px solid #000; padding-left: 4px; }
+  .a6-fila .linea-corta { width: 70px; border-bottom: 1px solid #000; padding-left: 4px; }
+
+  /* TABLA DE PRODUCTOS */
+  .a6-tabla { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 6px; }
+  .a6-tabla th { background: #000; color: #fff; padding: 3px; font-size: 8px; text-align: center; border: 1px solid #000; }
+  .a6-tabla td { border-right: 1px solid #000; padding: 3px; font-size: 8.5px; border-bottom: 1px dotted #000; vertical-align: top; }
+  .a6-tabla .center { text-align: center; }
+  .a6-tabla .right { text-align: right; }
+  
+  /* Para que la tabla mantenga un alto mínimo */
+  .a6-tabla-container { min-height: 65mm; display: flex; flex-direction: column; }
+  .a6-tabla { flex: 1; }
+
+  /* PIE DE PÁGINA (TOTALES Y FIRMAS) */
+  .a6-footer { display: flex; justify-content: space-between; align-items: flex-end; font-size: 8px; margin-top: 4px;}
+  
+  .a6-firmas { width: 50%; display: flex; justify-content: space-between; text-align: center; padding-bottom: 5px;}
+  .a6-firma-line { width: 45%; border-top: 1px solid #000; padding-top: 3px; font-size: 7px; }
+
+  .a6-totales-tabla { width: 45%; border: 1px solid #000; border-collapse: collapse; }
+  .a6-totales-tabla td { border: 1px solid #000; padding: 3px; font-size: 8px; }
+  .a6-totales-tabla .total-label { text-align: right; font-weight: bold; }
+  .a6-totales-tabla .total-valor { text-align: right; font-weight: bold; }
+  .a6-totales-tabla .forma-pago { text-align: center; font-weight: bold; font-size: 7px; background: #f4f4f4; }
+
+  /* =========================================
+     ESTILOS DE IMPRESIÓN (A6)
+     ========================================= */
+  @media print {
+    @page {
+      size: A6 portrait;
+      margin: 0;
+    }
+    body { background: white; display: block; height: auto; }
+    .menu, .panel-pos { display: none !important; }
+    .contenido { padding: 0; margin: 0; display: block; }
+    .panel-preview { background: white; padding: 0; margin: 0; display: block; overflow: visible; }
+    
+    .hoja-a6 { 
+      box-shadow: none; 
+      width: 100%; 
+      height: auto;
+      padding: 5mm 8mm; 
+    }
+    
+    /* Ocultamos el borde punteado simulado en la zona de la autorización */
+    .a6-header-right { border: none; }
+    
+    /* Forzar que las filas de la tabla no se corten a la mitad */
+    .a6-tabla tr { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <img src="logo.png" alt="MDK" class="logo-sidebar">
+  <div class="nav-links">
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="facturacion.html" class="activo">🧾 Nota de Venta</a>
+    <a href="ingreso-mercaderia.html">📦 Ingreso Mercadería</a>
+    <hr class="divisor">
+    <a href="productos.html">🔧 Productos</a>
+    <a href="clientes.html">👥 Clientes</a>
+    <a href="#">🏭 Proveedores</a>
+    <hr class="divisor">
+    <a href="consultas.html">🔎 Reportes</a>
+    <a href="configuracion.html">⚙️ Configuración</a>
+  </div>
+  <div class="creditos">
+    Sistema creado por<br><b>Cesar Paul Camacho Rivera</b><br>Ingeniería en TI
+  </div>
+</div>
+
+<div class="contenido">
+  <!-- PANEL IZQUIERDO: Operaciones -->
+  <div class="panel-pos">
+    <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+      <div class="buscador-box">
+        <input type="text" id="inputBuscar" placeholder="🔍 Escanea código o busca producto..." autofocus>
+        <button class="btn-buscar" onclick="buscarProducto()">Agregar</button>
+      </div>
+
+      <div class="cliente-buscar-box">
+        <input type="text" id="buscarCliente" placeholder="🔍 Escribe la Cédula o Nombre del cliente registrado aquí..." onkeypress="if(event.key === 'Enter') cargarCliente()">
+        <button class="btn-cargar-cli" onclick="cargarCliente()">Cargar</button>
+      </div>
+
+      <div class="cliente-grid">
+        <input type="text" id="clienteNombre" placeholder="Nombre / Razón Social" oninput="actualizarVistaA6()">
+        <input type="text" id="clienteCedula" placeholder="Cédula / RUC" oninput="actualizarVistaA6()">
+        <input type="text" id="clienteTelefono" placeholder="Teléfono" oninput="actualizarVistaA6()">
+        <input type="text" id="clienteCorreo" placeholder="Correo Electrónico" oninput="actualizarVistaA6()">
+        <input type="text" id="clienteDireccion" placeholder="Dirección de Entrega" class="full-width" oninput="actualizarVistaA6()">
+      </div>
+      
+      <div style="flex: 1; overflow-y: auto;">
+        <table class="tabla-carrito">
+          <thead>
+            <tr><th style="width: 100px;">Cant.</th><th>Descripción</th><th>P. Unit</th><th>Total</th><th></th></tr>
+          </thead>
+          <tbody id="carritoBody">
+            <tr><td colspan="5" style="text-align: center; color: #94A3B8; padding: 20px;">No hay productos.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="total-box">
+        <div class="fila-total">
+          <span>Subtotal:</span>
+          <span id="lblSubtotal">$0.00</span>
+        </div>
+        <div class="fila-total fila-descuento">
+          <span>Descuento:</span>
+          <div>
+            <input type="number" id="inputDescuento" step="1" min="0" max="100" value="0" onchange="aplicarDescuento()" onkeyup="aplicarDescuento()">
+            <span class="simbolo">%</span>
+            <span id="lblDescuentoDinero" style="font-size: 14px; color: #EF4444; margin-left: 10px; font-weight: bold;">(-$0.00)</span>
+          </div>
+        </div>
+        <div class="total-final"><span>TOTAL:</span> <span id="lblTotal">$0.00</span></div>
+        
+        <button class="btn-cobrar" onclick="cobrar()">💵 COBRAR E IMPRIMIR A6</button>
+        <button class="btn-vaciar" onclick="vaciarCarrito()">Cancelar Venta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DERECHO: Vista Previa Hoja A6 -->
+  <div class="panel-preview">
+    <div class="hoja-a6">
+      
+      <!-- CABECERA -->
+      <div class="a6-header">
+        <div class="a6-header-left">
+          <img src="logo.png" alt="MDK Logo" class="a6-logo">
+          <p>"CONTRIBUYENTE NEGOCIO POPULAR - RÉGIMEN RIMPE"</p>
+          <p><span class="bold">Dirección:</span> Andrés Pérez S9-160 y Gonzalo Martín</p>
+          <p><span class="bold">Celular:</span> 0985582846</p>
+          <p><span class="bold">Correo:</span> kerlyjemimaponce093@gmail.com</p>
+          <p>Quito - Ecuador</p>
+        </div>
+        <div class="a6-header-right">
+          <!-- Espacio en blanco para el recuadro de Autorización Preimpreso -->
+        </div>
+      </div>
+
+      <!-- DATOS CLIENTE -->
+      <div class="a6-cliente">
+        <div class="a6-fila">
+          <div class="label">Fecha:</div>
+          <div class="linea" id="a6Fecha"></div>
+        </div>
+        <div class="a6-fila">
+          <div class="label">Cliente:</div>
+          <div class="linea" id="a6Cliente"></div>
+        </div>
+        <div class="a6-fila">
+          <div class="label">Dirección:</div>
+          <div class="linea" id="a6Direccion"></div>
+        </div>
+        <div class="a6-fila">
+          <div class="label">R.U.C. / C.I.:</div>
+          <div class="linea" id="a6Cedula"></div>
+          <div class="label" style="width: 45px; margin-left: 5px;">Teléfono:</div>
+          <div class="linea" id="a6Telefono"></div>
+        </div>
+      </div>
+
+      <!-- TABLA DE PRODUCTOS -->
+      <div class="a6-tabla-container">
+        <table class="a6-tabla">
+          <thead>
+            <tr>
+              <th style="width: 12%;">CANT.</th>
+              <th style="width: 48%;">DESCRIPCIÓN</th>
+              <th style="width: 20%;">V. UNIT.</th>
+              <th style="width: 20%;">VALOR TOTAL</th>
+            </tr>
+          </thead>
+          <tbody id="a6Items">
+            <!-- Se llena dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PIE DE PÁGINA -->
+      <div class="a6-footer">
+        <!-- Firmas -->
+        <div class="a6-firmas">
+          <div class="a6-firma-line">Firma Autorizada</div>
+          <div class="a6-firma-line">Cliente</div>
+        </div>
+
+        <!-- Totales y Forma de Pago -->
+        <table class="a6-totales-tabla">
+          <tr>
+            <td class="total-label">TOTAL</td>
+            <td class="total-valor" id="a6Total">$0.00</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="forma-pago">FORMA DE PAGO</td>
+          </tr>
+          <tr>
+            <td>EFECTIVO</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td style="font-size: 6px;">CON UTILIZACIÓN DEL SISTEMA FINANCIERO</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td style="font-size: 6px;">OTROS SIN UTILIZACIÓN DEL SISTEMA FINANCIERO</td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('logueado') !== 'si') window.location.href = 'index.html';
+
+  let db;
+  const request = indexedDB.open("MDK_Ferreteria", 4); 
+  request.onsuccess = function(e) { db = e.target.result; };
+
+  let carrito = [];
+
+  const hoy = new Date();
+  const fechaA6 = hoy.getDate().toString().padStart(2, '0') + '/' + (hoy.getMonth()+1).toString().padStart(2, '0') + '/' + hoy.getFullYear();
+  document.getElementById('a6Fecha').innerText = fechaA6;
+
+  document.getElementById('inputBuscar').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') buscarProducto();
+  });
+
+  function cargarCliente() {
+    const texto = document.getElementById('buscarCliente').value.trim().toLowerCase();
+    if (!texto) return;
+
+    const transaction = db.transaction(["clientes"], "readonly");
+    const store = transaction.objectStore("clientes");
+    const reqTodos = store.getAll();
+
+    reqTodos.onsuccess = function() {
+      const clientes = reqTodos.result;
+      const cliente = clientes.find(c => c.cedula.includes(texto) || c.nombre.toLowerCase().includes(texto));
+
+      if (cliente) {
+        document.getElementById('clienteNombre').value = cliente.nombre;
+        document.getElementById('clienteCedula').value = cliente.cedula;
+        document.getElementById('clienteTelefono').value = cliente.telefono || '';
+        document.getElementById('clienteCorreo').value = cliente.correo || '';
+        document.getElementById('clienteDireccion').value = cliente.direccion || '';
+        actualizarVistaA6();
+        document.getElementById('buscarCliente').value = '';
+      } else {
+        alert("❌ Cliente no encontrado.");
+      }
+    };
+  }
+
+  function buscarProducto() {
+    const texto = document.getElementById('inputBuscar').value.trim();
+    if (!texto) return;
+
+    const transaction = db.transaction(["productos"], "readonly");
+    const store = transaction.objectStore("productos");
+    const index = store.index("codigo");
+    
+    const reqCodigo = index.get(texto);
+    
+    reqCodigo.onsuccess = function() {
+      if (reqCodigo.result) {
+        agregarAlCarrito(reqCodigo.result);
+      } else {
+        const reqTodos = store.getAll();
+        reqTodos.onsuccess = function() {
+          const encontrados = reqTodos.result.filter(p => p.nombre.toLowerCase().includes(texto.toLowerCase()));
+          if (encontrados.length > 0) {
+            agregarAlCarrito(encontrados[0]);
+          } else {
+            alert("❌ Producto no encontrado.");
+          }
+        };
+      }
+    };
+  }
+
+  function agregarAlCarrito(prod) {
+    if (prod.stock <= 0) { alert("⚠️ Sin stock disponible."); return; }
+
+    const itemExistente = carrito.find(x => x.id === prod.id);
+    if (itemExistente) {
+      if (itemExistente.cantidad < prod.stock) {
+        itemExistente.cantidad++;
+      } else {
+        alert("⚠️ No puedes agregar más, el stock máximo es " + prod.stock);
+        return;
+      }
+    } else {
+      carrito.push({ id: prod.id, codigo: prod.codigo, nombre: prod.nombre, precio: prod.precio, cantidad: 1, stockMax: prod.stock });
+    }
+    
+    document.getElementById('inputBuscar').value = '';
+    renderCarrito();
+  }
+
+  function renderCarrito() {
+    const tbody = document.getElementById('carritoBody');
+    const a6Items = document.getElementById('a6Items');
+    
+    if (carrito.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94A3B8; padding: 20px;">No hay productos.</td></tr>`;
+      a6Items.innerHTML = ``; 
+      calcularTotales();
+      return;
+    }
+
+    let htmlPOS = '';
+    let htmlA6 = '';
+
+    carrito.forEach((item, index) => {
+      const totalItem = item.precio * item.cantidad;
+
+      htmlPOS += `
+        <tr>
+          <td>
+            <div class="ctrl-cantidad">
+              <button onclick="modificarCantidad(${index}, -1)">-</button>
+              <input type="number" min="1" value="${item.cantidad}" onchange="cambiarCantidadManual(${index}, this.value)">
+              <button onclick="modificarCantidad(${index}, 1)">+</button>
+            </div>
+          </td>
+          <td>${item.nombre}</td>
+          <td>$${item.precio.toFixed(2)}</td>
+          <td><b>$${totalItem.toFixed(2)}</b></td>
+          <td><button onclick="quitarDelCarrito(${index})" style="border:none; background:none; color:#EF4444; cursor:pointer; font-size:16px;">✖</button></td>
+        </tr>
+      `;
+
+      htmlA6 += `
+        <tr>
+          <td class="center" style="font-weight:bold;">${item.cantidad}</td>
+          <td>${item.nombre}</td>
+          <td class="right">$${item.precio.toFixed(2)}</td>
+          <td class="right">$${totalItem.toFixed(2)}</td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = htmlPOS;
+    a6Items.innerHTML = htmlA6;
+    calcularTotales();
+  }
+
+  function calcularTotales() {
+    let subtotal = 0;
+    carrito.forEach(item => { subtotal += (item.precio * item.cantidad); });
+
+    let porcentaje = parseFloat(document.getElementById('inputDescuento').value) || 0;
+    if (porcentaje < 0) porcentaje = 0;
+    if (porcentaje > 100) porcentaje = 100;
+
+    const descuentoDinero = subtotal * (porcentaje / 100);
+    const totalFinal = subtotal - descuentoDinero;
+
+    document.getElementById('lblSubtotal').innerText = '$' + subtotal.toFixed(2);
+    document.getElementById('lblDescuentoDinero').innerText = '(-$' + descuentoDinero.toFixed(2) + ')';
+    document.getElementById('lblTotal').innerText = '$' + totalFinal.toFixed(2);
+
+    document.getElementById('a6Total').innerText = '$' + totalFinal.toFixed(2);
+  }
+
+  function aplicarDescuento() { calcularTotales(); }
+
+  function modificarCantidad(index, delta) {
+    const item = carrito[index];
+    let nuevaCant = item.cantidad + delta;
+    if (nuevaCant < 1) return; 
+    if (nuevaCant > item.stockMax) { alert("⚠️ Solo hay " + item.stockMax + " unidades en stock."); return; }
+    carrito[index].cantidad = nuevaCant;
+    renderCarrito();
+  }
+
+  function cambiarCantidadManual(index, valor) {
+    let nuevaCant = parseInt(valor);
+    const item = carrito[index];
+    if (isNaN(nuevaCant) || nuevaCant < 1) nuevaCant = 1;
+    if (nuevaCant > item.stockMax) {
+      alert("⚠️ Solo hay " + item.stockMax + " unidades en stock.");
+      nuevaCant = item.stockMax;
+    }
+    carrito[index].cantidad = nuevaCant;
+    renderCarrito();
+  }
+
+  function quitarDelCarrito(index) {
+    carrito.splice(index, 1);
+    renderCarrito();
+  }
+
+  function vaciarCarrito() {
+    if(confirm("¿Seguro que deseas cancelar esta venta?")) {
+      carrito = [];
+      document.getElementById('inputDescuento').value = '0';
+      limpiarCliente();
+      renderCarrito();
+    }
+  }
+
+  function actualizarVistaA6() {
+    const nombre = document.getElementById('clienteNombre').value.trim();
+    const cedula = document.getElementById('clienteCedula').value.trim();
+    const telefono = document.getElementById('clienteTelefono').value.trim();
+    const direccion = document.getElementById('clienteDireccion').value.trim();
+    
+    document.getElementById('a6Cliente').innerText = nombre || "CONSUMIDOR FINAL";
+    document.getElementById('a6Cedula').innerText = cedula || "9999999999";
+    document.getElementById('a6Telefono').innerText = telefono || "";
+    document.getElementById('a6Direccion').innerText = direccion || "";
+  }
+
+  function limpiarCliente() {
+    document.getElementById('clienteNombre').value = '';
+    document.getElementById('clienteCedula').value = '';
+    document.getElementById('clienteTelefono').value = '';
+    document.getElementById('clienteCorreo').value = '';
+    document.getElementById('clienteDireccion').value = '';
+    document.getElementById('buscarCliente').value = '';
+    actualizarVistaA6();
+  }
+
+  function cobrar() {
+    if (carrito.length === 0) { alert("El carrito está vacío."); return; }
+
+    const totalPagar = parseFloat(document.getElementById('lblTotal').innerText.replace('$', ''));
+    const subtotal = parseFloat(document.getElementById('lblSubtotal').innerText.replace('$', ''));
+    const porcentaje = parseFloat(document.getElementById('inputDescuento').value) || 0;
+    const descuentoDinero = subtotal * (porcentaje / 100);
+    
+    const montoRecibido = prompt(`El total a cobrar es: $${totalPagar.toFixed(2)}\n\nIngrese el efectivo recibido:`);
+    
+    if (montoRecibido === null) return;
+    if (parseFloat(montoRecibido) < totalPagar) { alert("Dinero insuficiente."); return; }
+
+    const ventaData = {
+      fecha: new Date().toISOString(),
+      clienteNombre: document.getElementById('clienteNombre').value.trim() || 'CONSUMIDOR FINAL',
+      clienteCedula: document.getElementById('clienteCedula').value.trim() || '9999999999',
+      clienteTelefono: document.getElementById('clienteTelefono').value.trim(),
+      clienteCorreo: document.getElementById('clienteCorreo').value.trim(),
+      clienteDireccion: document.getElementById('clienteDireccion').value.trim(),
+      items: carrito,
+      subtotal: subtotal,
+      descuentoPorcentaje: porcentaje,
+      descuentoDinero: descuentoDinero,
+      total: totalPagar,
+      montoRecibido: parseFloat(montoRecibido)
+    };
+
+    const txVentas = db.transaction(["ventas"], "readwrite");
+    txVentas.objectStore("ventas").add(ventaData);
+
+    const transaction = db.transaction(["productos"], "readwrite");
+    const store = transaction.objectStore("productos");
+
+    carrito.forEach(item => {
+      const req = store.get(item.id);
+      req.onsuccess = function() {
+        const prodDB = req.result;
+        prodDB.stock -= item.cantidad;
+        store.put(prodDB);
+      };
+    });
+
+    transaction.oncomplete = function() {
+      const cambio = parseFloat(montoRecibido) - totalPagar;
+      alert(`✅ Venta Exitosa. Cambio: $${cambio.toFixed(2)}\n\nAsegúrate de colocar tu hoja A6 en la impresora antes de dar Aceptar.`);
+      
+      window.print(); 
+      
+      carrito = [];
+      document.getElementById('inputDescuento').value = '0';
+      limpiarCliente();
+      renderCarrito();
+    };
+  }
+</script>
+</body>
+</html>

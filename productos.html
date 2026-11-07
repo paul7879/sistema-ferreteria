@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Productos · MDK Ferretería</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F1F5F9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+  .menu { width: 260px; background-color: #102A43; color: white; display: flex; flex-direction: column; padding: 20px 0; }
+  .logo-sidebar { width: 150px; display: block; margin: 0 auto 20px auto; background: white; padding: 10px; border-radius: 8px; }
+  .nav-links { flex: 1; overflow-y: auto; }
+  .menu a { color: #CBD5E1; text-decoration: none; display: block; padding: 12px 20px; margin: 4px 10px; border-radius: 6px; font-size: 14px; text-decoration: none; }
+  .menu a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+  .menu a.activo { background-color: rgba(255,255,255,0.15); border-left: 4px solid #F47920; color: white; font-weight: bold; }
+  .divisor { border-color: rgba(255,255,255,0.1); margin: 10px 20px; }
+  .creditos { font-size: 10px; color: #64748B; text-align: center; padding: 15px 10px 0 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
+  .creditos b { color: #F47920; }
+
+  .contenido { flex: 1; padding: 30px; overflow-y: auto; }
+  .barra { display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center; }
+  .barra h1 { color: #102A43; margin: 0; font-size: 24px; }
+  .btn { background: #F47920; color: white; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .btn:hover { background: #D96616; }
+  
+  table { width: 100%; background: white; border-collapse: collapse; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+  th, td { padding: 15px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 14px; }
+  th { background: #F8FAFC; color: #64748B; text-transform: uppercase; font-size: 12px;}
+  tr:hover td { background: #F8FAFC; }
+  .precio { font-weight: bold; color: #102A43; }
+  .badge { background: #D1FAE5; color: #065F46; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
+  .modal { background: white; padding: 30px; border-radius: 10px; width: 500px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+  .modal h2 { margin-top: 0; color: #102A43; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 12px; font-weight: bold; color: #64748B; margin-bottom: 5px; }
+  .form-group input, .form-group select { padding: 10px; border: 1px solid #CBD5E1; border-radius: 5px; font-family: inherit; }
+  .modal-botones { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-cancelar { background: #E2E8F0; color: #1E293B; }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <img src="logo.png" alt="MDK" class="logo-sidebar">
+  <div class="nav-links">
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="facturacion.html">🧾 Nota de Venta</a>
+    <a href="ingreso-mercaderia.html">📦 Ingreso Mercadería</a>
+    <hr class="divisor">
+    <a href="productos.html" class="activo">🔧 Productos</a>
+    <a href="clientes.html">👥 Clientes</a>
+    <a href="proveedores.html">🏭 Proveedores</a>
+    <hr class="divisor">
+    <a href="consultas.html">🔎 Consultas</a>
+
+  </div>
+  <div class="creditos">
+    Sistema creado por<br><b>Cesar Paul Camacho Rivera</b><br>Ingeniería en TI
+  </div>
+</div>
+
+<div class="contenido">
+  <div class="barra">
+    <h1>Catálogo de Productos</h1>
+    <div>
+      <input type="text" id="buscar" placeholder="🔍 Buscar por código o nombre..." style="padding: 10px; width: 250px; border: 1px solid #CBD5E1; border-radius: 5px;">
+      <button class="btn" onclick="abrirModal()">+ Nuevo Producto</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Código</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>IVA</th><th>Acciones</th></tr>
+    </thead>
+    <tbody id="tablaProductos"></tbody>
+  </table>
+</div>
+
+<!-- MODAL PARA AGREGAR/EDITAR -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="tituloModal">Nuevo Producto</h2>
+    <input type="hidden" id="prodId">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Código / Barras</label>
+        <input type="text" id="prodCodigo" placeholder="Ej: 750123">
+      </div>
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="prodCategoria">
+          <option>Herramientas</option><option>Plomería</option><option>Eléctrico</option>
+          <option>Pintura</option><option>Tornillería</option><option>Varios</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Nombre del Producto</label>
+        <input type="text" id="prodNombre" placeholder="Ej: Martillo 16oz">
+      </div>
+      <div class="form-group">
+        <label>Precio Venta (CON IVA)</label>
+        <input type="number" id="prodPrecio" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Tipo de IVA</label>
+        <select id="prodIva">
+          <option value="15">15%</option>
+          <option value="0">0%</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Costo Compra (SIN IVA)</label>
+        <input type="number" id="prodCosto" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Stock Actual</label>
+        <input type="number" id="prodStock" value="0">
+      </div>
+    </div>
+    <div class="modal-botones">
+      <button class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="guardarProducto()">Guardar Producto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==========================================
+  // BASE DE DATOS (IndexedDB)
+  // ==========================================
+  let db;
+  const request = indexedDB.open("MDK_Ferreteria", 1);
+  request.onupgradeneeded = function(e) {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains('productos')) {
+      const store = db.createObjectStore('productos', { keyPath: 'id', autoIncrement: true });
+      store.createIndex('codigo', 'codigo', { unique: true });
+    }
+  };
+  request.onsuccess = function(e) {
+    db = e.target.result;
+    cargarProductos();
+  };
+
+  // ==========================================
+  // LÓGICA DE LA PÁGINA
+  // ==========================================
+  if (localStorage.getItem('logueado') !== 'si') window.location.href = 'index.html';
+  let todosLosProductos = [];
+
+  function cargarProductos() {
+    const transaction = db.transaction(["productos"], "readonly");
+    const store = transaction.objectStore("productos");
+    const request = store.getAll();
+
+    request.onsuccess = function() {
+      todosLosProductos = request.result;
+      renderTabla(todosLosProductos);
+    };
+  }
+
+  function renderTabla(productos) {
+    const tbody = document.getElementById('tablaProductos');
+    if (productos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay productos registrados.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = productos.map(p => `
+      <tr>
+        <td><b>${p.codigo}</b></td>
+        <td>${p.nombre}</td>
+        <td class="precio">$${p.precio.toFixed(2)}</td>
+        <td>${p.stock}</td>
+        <td>${p.iva}%</td>
+        <td><button class="btn btn-cancelar" style="padding: 5px 10px;" onclick="editarProducto(${p.id})">Editar</button></td>
+      </tr>
+    `).join('');
+  }
+
+  // Buscador
+  document.getElementById('buscar').addEventListener('input', function(e) {
+    const texto = e.target.value.toLowerCase();
+    const filtrados = todosLosProductos.filter(p => 
+      p.nombre.toLowerCase().includes(texto) || p.codigo.includes(texto)
+    );
+    renderTabla(filtrados);
+  });
+
+  // Modal
+  function abrirModal() {
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('tituloModal').innerText = 'Nuevo Producto';
+    document.getElementById('prodId').value = '';
+    document.getElementById('prodCodigo').value = '';
+    document.getElementById('prodNombre').value = '';
+    document.getElementById('prodPrecio').value = '';
+    document.getElementById('prodCosto').value = '';
+    document.getElementById('prodStock').value = '0';
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  function editarProducto(id) {
+    const p = todosLosProductos.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('tituloModal').innerText = 'Editar Producto';
+    document.getElementById('prodId').value = p.id;
+    document.getElementById('prodCodigo').value = p.codigo;
+    document.getElementById('prodNombre').value = p.nombre;
+    document.getElementById('prodCategoria').value = p.categoria;
+    document.getElementById('prodPrecio').value = p.precio;
+    document.getElementById('prodIva').value = p.iva;
+    document.getElementById('prodCosto').value = p.costo;
+    document.getElementById('prodStock').value = p.stock;
+  }
+
+  function guardarProducto() {
+    const id = document.getElementById('prodId').value;
+    const producto = {
+      codigo: document.getElementById('prodCodigo').value.trim(),
+      nombre: document.getElementById('prodNombre').value.trim(),
+      categoria: document.getElementById('prodCategoria').value,
+      precio: parseFloat(document.getElementById('prodPrecio').value) || 0,
+      iva: parseInt(document.getElementById('prodIva').value),
+      costo: parseFloat(document.getElementById('prodCosto').value) || 0,
+      stock: parseInt(document.getElementById('prodStock').value) || 0
+    };
+
+    if (!producto.codigo || !producto.nombre || producto.precio <= 0) {
+      alert("Por favor, llena los campos obligatorios (Código, Nombre y Precio).");
+      return;
+    }
+
+    const transaction = db.transaction(["productos"], "readwrite");
+    const store = transaction.objectStore("productos");
+
+    if (id) {
+      producto.id = parseInt(id);
+      store.put(producto);
+    } else {
+      store.add(producto);
+    }
+
+    transaction.oncomplete = function() {
+      cerrarModal();
+      cargarProductos();
+    };
+    transaction.onerror = function(e) {
+      alert("Error: El código de barras ya existe en otro producto.");
+    };
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Clientes · MDK Ferretería</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F1F5F9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+  .menu { width: 240px; background-color: #102A43; color: white; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; }
+  .logo-sidebar { width: 140px; display: block; margin: 0 auto 20px auto; background: white; padding: 10px; border-radius: 8px; }
+  .nav-links { flex: 1; overflow-y: auto; }
+  .menu a { color: #CBD5E1; text-decoration: none; display: block; padding: 12px 20px; margin: 4px 10px; border-radius: 6px; font-size: 14px; }
+  .menu a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+  .menu a.activo { background-color: rgba(255,255,255,0.15); border-left: 4px solid #F47920; color: white; font-weight: bold; }
+  .divisor { border-color: rgba(255,255,255,0.1); margin: 10px 20px; }
+  .creditos { font-size: 10px; color: #64748B; text-align: center; padding: 15px 10px 0 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
+  .creditos b { color: #F47920; }
+
+  .contenido { flex: 1; padding: 30px; overflow-y: auto; }
+  .barra { display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center; }
+  .barra h1 { color: #102A43; margin: 0; font-size: 24px; }
+  
+  .btn { background: #F47920; color: white; padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .btn:hover { background: #D96616; }
+  
+  .buscador { padding: 12px; width: 300px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 14px; margin-right: 10px; }
+  
+  table { width: 100%; background: white; border-collapse: collapse; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+  th, td { padding: 15px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 14px; }
+  th { background: #F8FAFC; color: #64748B; text-transform: uppercase; font-size: 12px;}
+  tr:hover td { background: #F8FAFC; }
+  
+  /* MODAL */
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
+  .modal { background: white; padding: 30px; border-radius: 10px; width: 550px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+  .modal h2 { margin-top: 0; color: #102A43; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 12px; font-weight: bold; color: #64748B; margin-bottom: 5px; }
+  .form-group input { padding: 10px; border: 1px solid #CBD5E1; border-radius: 5px; font-family: inherit; }
+  .modal-botones { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-cancelar { background: #E2E8F0; color: #1E293B; }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <img src="logo.png" alt="MDK" class="logo-sidebar">
+  <div class="nav-links">
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="facturacion.html">🧾 Nota de Venta</a>
+    <a href="ingreso-mercaderia.html">📦 Ingreso Mercadería</a>
+    <hr class="divisor">
+    <a href="productos.html">🔧 Productos</a>
+    <a href="clientes.html" class="activo">👥 Clientes</a>
+    <a href="#">🏭 Proveedores</a>
+    <hr class="divisor">
+    <a href="consultas.html">🔎 Consultas</a>
+  </div>
+  <div class="creditos">
+    Sistema creado por<br><b>Cesar Paul Camacho Rivera</b><br>Ingeniería en TI
+  </div>
+</div>
+
+<div class="contenido">
+  <div class="barra">
+    <h1>Directorio de Clientes</h1>
+    <div>
+      <input type="text" id="buscar" class="buscador" placeholder="🔍 Buscar por nombre o cédula...">
+      <button class="btn" onclick="abrirModal()">+ Nuevo Cliente</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Cédula / RUC</th><th>Nombre</th><th>Teléfono</th><th>Correo</th><th>Acciones</th></tr>
+    </thead>
+    <tbody id="tablaClientes"></tbody>
+  </table>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="tituloModal">Nuevo Cliente</h2>
+    <input type="hidden" id="cliId">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Cédula / RUC</label>
+        <input type="text" id="cliCedula" placeholder="Ej: 1712345678">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="text" id="cliTelefono" placeholder="Ej: 0999999999">
+      </div>
+      <div class="form-group full">
+        <label>Nombre / Razón Social</label>
+        <input type="text" id="cliNombre" placeholder="Ej: Juan Pérez">
+      </div>
+      <div class="form-group full">
+        <label>Correo Electrónico</label>
+        <input type="email" id="cliCorreo" placeholder="Ej: cliente@correo.com">
+      </div>
+      <div class="form-group full">
+        <label>Dirección</label>
+        <input type="text" id="cliDireccion" placeholder="Ej: Av. Amazonas y Colón">
+      </div>
+    </div>
+    <div class="modal-botones">
+      <button class="btn btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn" onclick="guardarCliente()">Guardar Cliente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('logueado') !== 'si') window.location.href = 'index.html';
+
+  let db;
+  const request = indexedDB.open("MDK_Ferreteria", 4); // Versión 4 (Clientes)
+  
+  request.onupgradeneeded = function(e) {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains('productos')) {
+      const store = db.createObjectStore('productos', { keyPath: 'id', autoIncrement: true });
+      store.createIndex('codigo', 'codigo', { unique: true });
+    }
+    if (!db.objectStoreNames.contains('ventas')) {
+      db.createObjectStore('ventas', { keyPath: 'id', autoIncrement: true });
+    }
+    if (!db.objectStoreNames.contains('compras')) {
+      db.createObjectStore('compras', { keyPath: 'id', autoIncrement: true });
+    }
+    if (!db.objectStoreNames.contains('clientes')) {
+      const store = db.createObjectStore('clientes', { keyPath: 'id', autoIncrement: true });
+      store.createIndex('cedula', 'cedula', { unique: true });
+    }
+  };
+  
+  request.onsuccess = function(e) {
+    db = e.target.result;
+    cargarClientes();
+  };
+
+  let todosLosClientes = [];
+
+  function cargarClientes() {
+    const transaction = db.transaction(["clientes"], "readonly");
+    const store = transaction.objectStore("clientes");
+    const request = store.getAll();
+
+    request.onsuccess = function() {
+      todosLosClientes = request.result;
+      renderTabla(todosLosClientes);
+    };
+  }
+
+  function renderTabla(clientes) {
+    const tbody = document.getElementById('tablaClientes');
+    if (clientes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px;">No hay clientes registrados.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = clientes.map(c => `
+      <tr>
+        <td><b>${c.cedula}</b></td>
+        <td>${c.nombre}</td>
+        <td>${c.telefono || '-'}</td>
+        <td>${c.correo || '-'}</td>
+        <td><button class="btn btn-cancelar" style="padding: 5px 10px;" onclick="editarCliente(${c.id})">Editar</button></td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('buscar').addEventListener('input', function(e) {
+    const texto = e.target.value.toLowerCase();
+    const filtrados = todosLosClientes.filter(c => 
+      c.nombre.toLowerCase().includes(texto) || c.cedula.includes(texto)
+    );
+    renderTabla(filtrados);
+  });
+
+  function abrirModal() {
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('tituloModal').innerText = 'Nuevo Cliente';
+    document.getElementById('cliId').value = '';
+    document.getElementById('cliCedula').value = '';
+    document.getElementById('cliNombre').value = '';
+    document.getElementById('cliTelefono').value = '';
+    document.getElementById('cliCorreo').value = '';
+    document.getElementById('cliDireccion').value = '';
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  function editarCliente(id) {
+    const c = todosLosClientes.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('tituloModal').innerText = 'Editar Cliente';
+    document.getElementById('cliId').value = c.id;
+    document.getElementById('cliCedula').value = c.cedula;
+    document.getElementById('cliNombre').value = c.nombre;
+    document.getElementById('cliTelefono').value = c.telefono || '';
+    document.getElementById('cliCorreo').value = c.correo || '';
+    document.getElementById('cliDireccion').value = c.direccion || '';
+  }
+
+  function guardarCliente() {
+    const id = document.getElementById('cliId').value;
+    const cliente = {
+      cedula: document.getElementById('cliCedula').value.trim(),
+      nombre: document.getElementById('cliNombre').value.trim(),
+      telefono: document.getElementById('cliTelefono').value.trim(),
+      correo: document.getElementById('cliCorreo').value.trim(),
+      direccion: document.getElementById('cliDireccion').value.trim()
+    };
+
+    if (!cliente.cedula || !cliente.nombre) {
+      alert("Por favor, llena los campos obligatorios (Cédula y Nombre).");
+      return;
+    }
+
+    const transaction = db.transaction(["clientes"], "readwrite");
+    const store = transaction.objectStore("clientes");
+
+    if (id) {
+      cliente.id = parseInt(id);
+      store.put(cliente);
+    } else {
+      store.add(cliente);
+    }
+
+    transaction.oncomplete = function() {
+      cerrarModal();
+      cargarClientes();
+    };
+    transaction.onerror = function() {
+      alert("Error: Ya existe un cliente con esa Cédula/RUC.");
+    };
+  }
+</script>
+</body>
+</html>

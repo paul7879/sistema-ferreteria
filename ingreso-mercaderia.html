@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ingreso de Mercadería · MDK Ferretería</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F1F5F9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+  .menu { width: 240px; background-color: #102A43; color: white; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; }
+  .logo-sidebar { width: 140px; display: block; margin: 0 auto 20px auto; background: white; padding: 10px; border-radius: 8px; }
+  .nav-links { flex: 1; overflow-y: auto; }
+  .menu a { color: #CBD5E1; text-decoration: none; display: block; padding: 12px 20px; margin: 4px 10px; border-radius: 6px; font-size: 14px; }
+  .menu a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+  .menu a.activo { background-color: rgba(255,255,255,0.15); border-left: 4px solid #F47920; color: white; font-weight: bold; }
+  .divisor { border-color: rgba(255,255,255,0.1); margin: 10px 20px; }
+  .creditos { font-size: 10px; color: #64748B; text-align: center; padding: 15px 10px 0 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
+  .creditos b { color: #F47920; }
+
+  /* LAYOUT */
+  .contenido { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+  .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+  
+  /* FORMULARIO PROVEEDOR */
+  .proveedor-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; background: #F8FAFC; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; }
+  .proveedor-grid input, .proveedor-grid select { padding: 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 14px; font-family: inherit; }
+  .proveedor-grid input:focus, .proveedor-grid select:focus { border-color: #F47920; outline: none; }
+  .proveedor-grid label { font-size: 11px; font-weight: bold; color: #64748B; margin-bottom: 4px; display: block; }
+  .input-group { display: flex; flex-direction: column; }
+
+  /* BUSCADOR */
+  .buscador-box { display: flex; gap: 10px; margin-bottom: 15px; }
+  .buscador-box input { flex: 1; padding: 15px; font-size: 16px; border: 2px solid #E2E8F0; border-radius: 8px; }
+  .buscador-box input:focus { border-color: #F47920; outline: none; }
+  .btn-buscar { background: #102A43; color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  .btn-nuevo { background: #F47920; color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  
+  /* TABLA */
+  .tabla-ingreso { width: 100%; border-collapse: collapse; }
+  .tabla-ingreso th, .tabla-ingreso td { padding: 10px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 13px; }
+  .tabla-ingreso th { background: #F8FAFC; color: #64748B; text-transform: uppercase; font-size: 11px; }
+  .tabla-ingreso input { padding: 6px; border: 1px solid #CBD5E1; border-radius: 4px; font-weight: bold; text-align: center; }
+  
+  /* TOTALES Y BOTÓN */
+  .footer-box { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 2px solid #E2E8F0; padding-top: 20px; }
+  .total-text { font-size: 24px; font-weight: bold; color: #102A43; }
+  .btn-guardar { background: #10B981; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .btn-guardar:hover { background: #059669; }
+  .btn-cancelar { background: #FEE2E2; color: #991B1B; border: none; padding: 15px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px; }
+
+  /* MODAL CREAR PRODUCTO */
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
+  .modal { background: white; padding: 25px; border-radius: 10px; width: 500px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+  .modal h2 { margin-top: 0; color: #102A43; font-size: 18px; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px;}
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 12px; font-weight: bold; color: #64748B; margin-bottom: 5px; }
+  .form-group input { padding: 10px; border: 1px solid #CBD5E1; border-radius: 5px; font-family: inherit; }
+  .modal-botones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+  .btn-cerrar { background: #E2E8F0; color: #1E293B; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <img src="logo.png" alt="MDK" class="logo-sidebar">
+  <div class="nav-links">
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="facturacion.html">🧾 Nota de Venta</a>
+    <a href="ingreso-mercaderia.html" class="activo">📦 Ingreso Mercadería</a>
+    <hr class="divisor">
+    <a href="productos.html">🔧 Productos</a>
+    <a href="clientes.html">👥 Clientes</a>
+    <a href="#">🏭 Proveedores</a>
+    <hr class="divisor">
+    <a href="consultas.html">🔎 Consultas</a>
+  </div>
+  <div class="creditos">
+    Sistema creado por<br><b>Cesar Paul Camacho Rivera</b><br>Ingeniería en TI
+  </div>
+</div>
+
+<div class="contenido">
+  <!-- DATOS DE LA COMPRA -->
+  <div class="card">
+    <h2 style="margin-top: 0; color: #102A43; font-size: 18px; margin-bottom: 15px;">Datos de la Factura del Proveedor</h2>
+    <div class="proveedor-grid">
+      <div class="input-group">
+        <label>Proveedor</label>
+        <input type="text" id="provNombre" placeholder="Nombre del Proveedor">
+      </div>
+      <div class="input-group">
+        <label>Nro. Factura</label>
+        <input type="text" id="provFactura" placeholder="001-002-00045">
+      </div>
+      <div class="input-group">
+        <label>Fecha Compra</label>
+        <input type="date" id="fechaCompra">
+      </div>
+      <div class="input-group">
+        <label>Fecha Pago</label>
+        <input type="date" id="fechaPago">
+      </div>
+      <div class="input-group">
+        <label>Tipo de Pago</label>
+        <select id="tipoPago">
+          <option value="Contado">Contado (Total)</option>
+          <option value="Crédito">Crédito (Parcial/Abonos)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Estado</label>
+        <select id="estadoPago">
+          <option value="Pagado">Pagado</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETALLE DE PRODUCTOS -->
+  <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+    <div class="buscador-box">
+      <input type="text" id="inputBuscar" placeholder="🔍 Escanea código o busca producto..." autofocus>
+      <button class="btn-buscar" onclick="buscarProducto()">Buscar</button>
+      <button class="btn-nuevo" onclick="abrirModalNuevoProducto()">+ Crear Nuevo Producto</button>
+    </div>
+
+    <div style="flex: 1; overflow-y: auto;">
+      <table class="tabla-ingreso">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>Costo ($)</th>
+            <th>Margen (%)</th>
+            <th>P. Venta ($)</th>
+            <th>Cant.</th>
+            <th>Total Compra</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tablaBody">
+          <tr><td colspan="8" style="text-align: center; color: #94A3B8; padding: 20px;">Busca un producto o crea uno nuevo.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TOTALES -->
+    <div class="footer-box">
+      <div class="total-text">Total Compra: <span id="lblTotalCompra">$0.00</span></div>
+      <div>
+        <button class="btn-cancelar" onclick="cancelarCompra()">Cancelar</button>
+        <button class="btn-guardar" onclick="guardarIngreso()">📥 Guardar y Actualizar Inventario</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARA CREAR PRODUCTO NUEVO -->
+<div class="modal-overlay" id="modalProducto">
+  <div class="modal">
+    <h2>Crear Producto Nuevo (Rápido)</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Código / Barras</label>
+        <input type="text" id="newCodigo" placeholder="Ej: 750123">
+      </div>
+      <div class="form-group">
+        <label>Categoría</label>
+        <input type="text" id="newCategoria" placeholder="Ej: Herramientas">
+      </div>
+      <div class="form-group full">
+        <label>Nombre / Descripción (Según factura)</label>
+        <input type="text" id="newNombre" placeholder="Ej: Martillo de acero 16oz">
+      </div>
+      <div class="form-group">
+        <label>Costo de Compra ($)</label>
+        <input type="number" id="newCosto" step="0.01" value="0.00" oninput="calcularPrecioModal()">
+      </div>
+      <div class="form-group">
+        <label>Margen de Ganancia (%)</label>
+        <input type="number" id="newMargen" step="1" value="30" oninput="calcularPrecioModal()">
+      </div>
+      <div class="form-group full">
+        <label>Precio de Venta Final ($)</label>
+        <input type="number" id="newPrecioVenta" step="0.01" value="0.00" style="background:#F0FDF4; font-weight:bold; color:#166534;">
+      </div>
+    </div>
+    <div class="modal-botones">
+      <button class="btn-cerrar" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardarNuevoProducto()">Guardar y Agregar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('logueado') !== 'si') window.location.href = 'index.html';
+
+  let db;
+  const request = indexedDB.open("MDK_Ferreteria", 4); 
+  request.onsuccess = function(e) { db = e.target.result; };
+
+  let listaCompra = [];
+
+  // Poner fecha de hoy por defecto
+  document.getElementById('fechaCompra').value = new Date().toISOString().split('T')[0];
+
+  document.getElementById('inputBuscar').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') buscarProducto();
+  });
+
+  function buscarProducto() {
+    const texto = document.getElementById('inputBuscar').value.trim();
+    if (!texto) return;
+
+    const transaction = db.transaction(["productos"], "readonly");
+    const store = transaction.objectStore("productos");
+    const index = store.index("codigo");
+    
+    const reqCodigo = index.get(texto);
+    
+    reqCodigo.onsuccess = function() {
+      if (reqCodigo.result) {
+        agregarALista(reqCodigo.result);
+      } else {
+        const reqTodos = store.getAll();
+        reqTodos.onsuccess = function() {
+          const encontrados = reqTodos.result.filter(p => p.nombre.toLowerCase().includes(texto.toLowerCase()));
+          if (encontrados.length > 0) {
+            agregarALista(encontrados[0]);
+          } else {
+            alert("❌ Producto no encontrado. Puedes crearlo con el botón naranja '+ Crear Nuevo Producto'.");
+          }
+        };
+      }
+    };
+  }
+
+  function agregarALista(prod) {
+    const itemExistente = listaCompra.find(x => x.id === prod.id);
+    
+    if (itemExistente) {
+      itemExistente.cantidad++; 
+    } else {
+      listaCompra.push({
+        id: prod.id,
+        codigo: prod.codigo,
+        nombre: prod.nombre,
+        costo: prod.costo || 0, 
+        margen: 30, // Margen por defecto
+        precioVenta: (prod.costo || 0) * 1.30,
+        cantidad: 1
+      });
+    }
+    
+    document.getElementById('inputBuscar').value = '';
+    renderTabla();
+  }
+
+  function renderTabla() {
+    const tbody = document.getElementById('tablaBody');
+    if (listaCompra.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94A3B8; padding: 20px;">Busca un producto o crea uno nuevo.</td></tr>`;
+      actualizarTotal(0);
+      return;
+    }
+
+    let html = '';
+    let totalGeneral = 0;
+
+    listaCompra.forEach((item, index) => {
+      const totalItem = item.costo * item.cantidad;
+      totalGeneral += totalItem;
+
+      html += `
+        <tr>
+          <td><b>${item.codigo}</b></td>
+          <td>${item.nombre}</td>
+          <td>
+            <input type="number" step="0.01" value="${item.costo.toFixed(2)}" 
+                   onchange="actualizarCosto(${index}, this.value)" style="width: 80px;">
+          </td>
+          <td>
+            <input type="number" step="1" value="${item.margen}" 
+                   onchange="actualizarMargen(${index}, this.value)" style="width: 60px;">
+          </td>
+          <td>
+            <b>$${item.precioVenta.toFixed(2)}</b>
+          </td>
+          <td>
+            <input type="number" min="1" value="${item.cantidad}" 
+                   onchange="actualizarCantidad(${index}, this.value)" style="width: 60px;">
+          </td>
+          <td><b>$${totalItem.toFixed(2)}</b></td>
+          <td><button onclick="quitar(${index})" style="border:none; background:none; color:#EF4444; cursor:pointer; font-size:16px;">✖</button></td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+    actualizarTotal(totalGeneral);
+  }
+
+  // --- ACTUALIZACIONES EN LA TABLA ---
+  function actualizarCosto(index, valor) {
+    let nuevoCosto = parseFloat(valor);
+    if (isNaN(nuevoCosto) || nuevoCosto < 0) nuevoCosto = 0;
+    
+    listaCompra[index].costo = nuevoCosto;
+    // Recalcular precio de venta
+    listaCompra[index].precioVenta = nuevoCosto * (1 + (listaCompra[index].margen / 100));
+    renderTabla();
+  }
+
+  function actualizarMargen(index, valor) {
+    let nuevoMargen = parseFloat(valor);
+    if (isNaN(nuevoMargen) || nuevoMargen < 0) nuevoMargen = 0;
+    
+    listaCompra[index].margen = nuevoMargen;
+    // Recalcular precio de venta
+    listaCompra[index].precioVenta = listaCompra[index].costo * (1 + (nuevoMargen / 100));
+    renderTabla();
+  }
+
+  function actualizarCantidad(index, valor) {
+    let nuevaCant = parseInt(valor);
+    if (isNaN(nuevaCant) || nuevaCant < 1) nuevaCant = 1;
+    listaCompra[index].cantidad = nuevaCant;
+    renderTabla();
+  }
+
+  function quitar(index) {
+    listaCompra.splice(index, 1);
+    renderTabla();
+  }
+
+  function actualizarTotal(total) {
+    document.getElementById('lblTotalCompra').innerText = '$' + total.toFixed(2);
+  }
+
+  function cancelarCompra() {
+    if(confirm("¿Seguro que deseas cancelar este ingreso?")) {
+      listaCompra = [];
+      document.getElementById('provNombre').value = '';
+      document.getElementById('provFactura').value = '';
+      document.getElementById('fechaPago').value = '';
+      renderTabla();
+    }
+  }
+
+  // --- LÓGICA PARA CREAR PRODUCTO NUEVO ---
+  function abrirModalNuevoProducto() {
+    document.getElementById('modalProducto').style.display = 'flex';
+    document.getElementById('newCodigo').value = '';
+    document.getElementById('newNombre').value = '';
+    document.getElementById('newCosto').value = '0.00';
+    document.getElementById('newMargen').value = '30';
+    document.getElementById('newPrecioVenta').value = '0.00';
+    document.getElementById('newCategoria').value = 'Varios';
+  }
+
+  function cerrarModal() {
+    document.getElementById('modalProducto').style.display = 'none';
+  }
+
+  function calcularPrecioModal() {
+    const costo = parseFloat(document.getElementById('newCosto').value) || 0;
+    const margen = parseFloat(document.getElementById('newMargen').value) || 0;
+    const precioVenta = costo * (1 + (margen / 100));
+    document.getElementById('newPrecioVenta').value = precioVenta.toFixed(2);
+  }
+
+  function guardarNuevoProducto() {
+    const codigo = document.getElementById('newCodigo').value.trim();
+    const nombre = document.getElementById('newNombre').value.trim();
+    const costo = parseFloat(document.getElementById('newCosto').value) || 0;
+    const margen = parseFloat(document.getElementById('newMargen').value) || 30;
+    const precioVenta = parseFloat(document.getElementById('newPrecioVenta').value) || 0;
+    const categoria = document.getElementById('newCategoria').value.trim() || 'Varios';
+
+    if (!codigo || !nombre) {
+      alert("El código y el nombre son obligatorios.");
+      return;
+    }
+
+    const nuevoProd = {
+      codigo: codigo,
+      nombre: nombre,
+      categoria: categoria,
+      costo: costo,
+      precio: precioVenta,
+      stock: 0,
+      stockMin: 5,
+      iva: 15,
+      activo: true
+    };
+
+    const txProd = db.transaction(["productos"], "readwrite");
+    const store = txProd.objectStore("productos");
+    const req = store.add(nuevoProd);
+
+    req.onsuccess = function(e) {
+      nuevoProd.id = e.target.result; // Obtenemos el ID autoincremental
+      
+      // Agregar directamente a la lista de compra con el margen elegido
+      listaCompra.push({
+        id: nuevoProd.id,
+        codigo: nuevoProd.codigo,
+        nombre: nuevoProd.nombre,
+        costo: costo,
+        margen: margen,
+        precioVenta: precioVenta,
+        cantidad: 1
+      });
+      
+      cerrarModal();
+      renderTabla();
+      alert("✅ Producto creado y agregado a la factura.");
+    };
+
+    req.onerror = function() {
+      alert("❌ Error: El código de barras ya existe.");
+    };
+  }
+
+  // --- GUARDAR LA COMPRA FINAL ---
+  function guardarIngreso() {
+    if (listaCompra.length === 0) {
+      alert("No hay productos en la lista para ingresar.");
+      return;
+    }
+
+    const proveedor = document.getElementById('provNombre').value.trim() || 'Proveedor no especificado';
+    const factura = document.getElementById('provFactura').value.trim() || 'S/N';
+    const fechaCompra = document.getElementById('fechaCompra').value;
+    const fechaPago = document.getElementById('fechaPago').value;
+    const tipoPago = document.getElementById('tipoPago').value;
+    const estadoPago = document.getElementById('estadoPago').value;
+    const totalCompra = parseFloat(document.getElementById('lblTotalCompra').innerText.replace('$', ''));
+
+    // 1. Guardar registro de la compra
+    const compraData = {
+      fechaRegistro: new Date().toISOString(),
+      proveedor: proveedor,
+      factura: factura,
+      fechaCompra: fechaCompra,
+      fechaPago: fechaPago,
+      tipoPago: tipoPago,
+      estadoPago: estadoPago,
+      items: listaCompra,
+      total: totalCompra
+    };
+
+    const txCompras = db.transaction(["compras"], "readwrite");
+    txCompras.objectStore("compras").add(compraData);
+
+    // 2. Actualizar el Stock, Costo y Precio de Venta en el catálogo
+    const transaction = db.transaction(["productos"], "readwrite");
+    const store = transaction.objectStore("productos");
+
+    listaCompra.forEach(item => {
+      const req = store.get(item.id);
+      req.onsuccess = function() {
+        const prodDB = req.result;
+        if (prodDB) {
+          prodDB.stock = (prodDB.stock || 0) + item.cantidad;
+          prodDB.costo = item.costo; 
+          prodDB.precio = item.precioVenta; // Actualizamos el precio de venta final
+          store.put(prodDB);
+        }
+      };
+    });
+
+    transaction.oncomplete = function() {
+      alert(`✅ ¡Compra registrada con éxito!\n\nSe ingresaron ${listaCompra.length} producto(s) al inventario y se actualizaron sus precios de venta.`);
+      
+      // Limpiar
+      listaCompra = [];
+      document.getElementById('provNombre').value = '';
+      document.getElementById('provFactura').value = '';
+      document.getElementById('fechaPago').value = '';
+      renderTabla();
+    };
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard · MDK Ferretería</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F1F5F9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+  .menu { width: 240px; background-color: #102A43; color: white; display: flex; flex-direction: column; padding: 20px 0; z-index: 10; }
+  .logo-sidebar { width: 140px; display: block; margin: 0 auto 20px auto; background: white; padding: 10px; border-radius: 8px; }
+  .nav-links { flex: 1; overflow-y: auto; }
+  .menu a { color: #CBD5E1; text-decoration: none; display: block; padding: 12px 20px; margin: 4px 10px; border-radius: 6px; font-size: 14px; }
+  .menu a:hover { background-color: rgba(255,255,255,0.1); color: white; }
+  .menu a.activo { background-color: rgba(255,255,255,0.15); border-left: 4px solid #F47920; color: white; font-weight: bold; }
+  .divisor { border-color: rgba(255,255,255,0.1); margin: 10px 20px; }
+  .creditos { font-size: 10px; color: #64748B; text-align: center; padding: 15px 10px 0 10px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto; }
+  .creditos b { color: #F47920; }
+
+  /* CONTENIDO PRINCIPAL */
+  .contenido { flex: 1; padding: 30px; overflow-y: auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+  .header-top h1 { color: #102A43; margin: 0; font-size: 26px; }
+  .btn-refresh { background: #E2E8F0; color: #102A43; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .btn-refresh:hover { background: #CBD5E1; }
+
+  /* TARJETAS KPI */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+  .kpi-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #F47920; display: flex; flex-direction: column; }
+  .kpi-card h3 { margin: 0 0 10px 0; color: #64748B; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-card .numero { font-size: 32px; font-weight: bold; color: #102A43; }
+  .kpi-card.alert { border-left-color: #EF4444; }
+  .kpi-card.alert .numero { color: #EF4444; }
+
+  /* SECCIONES INFERIORES */
+  .secciones-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
+  .card-tabla { background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; }
+  .card-tabla h2 { font-size: 18px; color: #102A43; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; }
+  
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #E2E8F0; font-size: 13px; }
+  th { background: #F8FAFC; color: #64748B; text-transform: uppercase; font-size: 11px; }
+  
+  .badge-stock { background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+  .badge-ok { background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <img src="logo.png" alt="MDK" class="logo-sidebar">
+  <div class="nav-links">
+    <a href="dashboard.html" class="activo">📊 Dashboard</a>
+    <a href="facturacion.html">🧾 Nota de Venta</a>
+    <a href="ingreso-mercaderia.html">📦 Ingreso Mercadería</a>
+    <hr class="divisor">
+    <a href="productos.html">🔧 Productos</a>
+    <a href="clientes.html">👥 Clientes</a>
+    <a href="proveedores.html">🏭 Proveedores</a>
+    <hr class="divisor">
+    <a href="consultas.html">🔎 Consultas</a>
+  </div>
+  <div class="creditos">
+    Sistema creado por<br><b>Cesar Paul Camacho Rivera</b><br>Ingeniería en TI
+  </div>
+</div>
+
+<div class="contenido">
+  <div class="header-top">
+    <h1>Resumen del Negocio</h1>
+    <button class="btn-refresh" onclick="cargarDatos()">🔄 Actualizar Datos</button>
+  </div>
+
+  <!-- TARJETAS DE INDICADORES -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <h3>Ventas de Hoy</h3>
+      <div class="numero" id="kpiVentas">$0.00</div>
+    </div>
+    <div class="kpi-card">
+      <h3>Transacciones Hoy</h3>
+      <div class="numero" id="kpiTransacciones">0</div>
+    </div>
+    <div class="kpi-card">
+      <h3>Total Productos</h3>
+      <div class="numero" id="kpiProductos">0</div>
+    </div>
+    <div class="kpi-card alert">
+      <h3>Alertas de Stock</h3>
+      <div class="numero" id="kpiAlertas">0</div>
+    </div>
+  </div>
+
+  <!-- TABLAS INFERIORES -->
+  <div class="secciones-grid">
+    
+    <!-- Últimas Ventas -->
+    <div class="card-tabla">
+      <h2>Últimas 5 Ventas</h2>
+      <table>
+        <thead>
+          <tr><th>Hora</th><th>Cliente</th><th>Total</th></tr>
+        </thead>
+        <tbody id="tablaUltimasVentas">
+          <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Productos por Agotarse -->
+    <div class="card-tabla">
+      <h2>Productos por Agotarse (Alerta)</h2>
+      <table>
+        <thead>
+          <tr><th>Producto</th><th>Stock</th><th>Mínimo</th></tr>
+        </thead>
+        <tbody id="tablaStockBajo">
+          <tr><td colspan="3" style="text-align:center;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('logueado') !== 'si') window.location.href = 'index.html';
+
+  let db;
+  const request = indexedDB.open("MDK_Ferreteria", 3);
+  request.onsuccess = function(e) {
+    db = e.target.result;
+    cargarDatos(); // Cargar todo al entrar
+  };
+
+  function cargarDatos() {
+    const hoyStr = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD de hoy
+    
+    let ventasHoyTotal = 0;
+    let ventasHoyCant = 0;
+    let ultimasVentas = [];
+
+    // 1. Obtener Ventas
+    const txVentas = db.transaction(["ventas"], "readonly");
+    const storeVentas = txVentas.objectStore("ventas");
+    const reqVentas = storeVentas.getAll();
+
+    reqVentas.onsuccess = function() {
+      const todasLasVentas = reqVentas.result.reverse(); // De la más reciente a la más antigua
+
+      todasLasVentas.forEach(venta => {
+        const fechaVenta = venta.fecha.split('T')[0];
+        
+        // Si la venta fue hoy, sumamos a los KPIs
+        if (fechaVenta === hoyStr) {
+          ventasHoyTotal += venta.total;
+          ventasHoyCant++;
+        }
+      });
+
+      // Tomar las últimas 5 ventas en general
+      ultimasVentas = todasLasVentas.slice(0, 5);
+
+      // Actualizar KPIs de ventas
+      document.getElementById('kpiVentas').innerText = '$' + ventasHoyTotal.toFixed(2);
+      document.getElementById('kpiTransacciones').innerText = ventasHoyCant;
+
+      // Renderizar tabla de últimas ventas
+      const tbodyVentas = document.getElementById('tablaUltimasVentas');
+      if (ultimasVentas.length === 0) {
+        tbodyVentas.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay ventas registradas.</td></tr>`;
+      } else {
+        tbodyVentas.innerHTML = ultimasVentas.map(v => {
+          const hora = new Date(v.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          return `
+            <tr>
+              <td>${hora}</td>
+              <td>${v.clienteNombre}</td>
+              <td style="font-weight: bold; color: #10B981;">$${v.total.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    };
+
+    // 2. Obtener Productos (para alertas de stock)
+    const txProductos = db.transaction(["productos"], "readonly");
+    const storeProductos = txProductos.objectStore("productos");
+    const reqProductos = storeProductos.getAll();
+
+    reqProductos.onsuccess = function() {
+      const todosLosProductos = reqProductos.result;
+      
+      // Filtrar productos con stock bajo (menor o igual al mínimo)
+      const stockBajo = todosLosProductos.filter(p => p.stock <= (p.stockMin || 0));
+
+      // Actualizar KPIs de productos
+      document.getElementById('kpiProductos').innerText = todosLosProductos.length;
+      document.getElementById('kpiAlertas').innerText = stockBajo.length;
+
+      // Renderizar tabla de productos por agotarse
+      const tbodyStock = document.getElementById('tablaStockBajo');
+      if (stockBajo.length === 0) {
+        tbodyStock.innerHTML = `<tr><td colspan="3" style="text-align:center;">Todo el inventario está bien. ✅</td></tr>`;
+      } else {
+        tbodyStock.innerHTML = stockBajo.map(p => `
+          <tr>
+            <td>${p.nombre}</td>
+            <td><span class="badge-stock">${p.stock} uds</span></td>
+            <td>${p.stockMin || 0}</td>
+          </tr>
+        `).join('');
+      }
+    };
+  }
+</script>
+</body>
+</html>
